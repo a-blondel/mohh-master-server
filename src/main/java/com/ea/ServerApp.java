@@ -3,6 +3,7 @@ package com.ea;
 import com.ea.config.ServerConfig;
 import com.ea.config.SslSocketThread;
 import com.ea.config.TcpSocketThread;
+import com.ea.config.TunnelHandler;
 import com.ea.enums.Certificates;
 import com.ea.services.GameService;
 import com.ea.services.PersonaService;
@@ -11,16 +12,12 @@ import com.ea.steps.SocketReader;
 import com.ea.steps.SocketWriter;
 import com.ea.utils.Props;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.*;
-import io.netty.util.CharsetUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -30,9 +27,7 @@ import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLSocket;
 import java.io.*;
 import java.net.*;
-import java.nio.charset.StandardCharsets;
 import java.security.Security;
-import java.util.Map;
 import java.util.concurrent.*;
 import java.util.function.Function;
 
@@ -120,7 +115,7 @@ public class ServerApp implements CommandLineRunner {
     private void startServerThread(ServerSocket serverSocket, Function<Socket, Runnable> runnableFactory) {
         new Thread(() -> {
             try {
-                log.info("Starting server thread for port: {}", serverSocket.getLocalPort());
+                log.info("Starting server thread on port {}", serverSocket.getLocalPort());
                 while (true) {
                     Socket socket = serverSocket.accept();
                     if (!(socket instanceof SSLSocket)) {
@@ -136,23 +131,23 @@ public class ServerApp implements CommandLineRunner {
 
     private void startTcpTunnelServer() {
         new Thread(() -> {
-            log.info("Starting tunnel server on port 80");
+            log.info("Starting tunnel server on port {}", props.getHttpPort());
             EventLoopGroup bossGroup = new NioEventLoopGroup();
             EventLoopGroup workerGroup = new NioEventLoopGroup();
             try {
-                ServerBootstrap b = new ServerBootstrap();
-                b.group(bossGroup, workerGroup)
+                ServerBootstrap serverBootstrap = new ServerBootstrap();
+                serverBootstrap.group(bossGroup, workerGroup)
                         .channel(NioServerSocketChannel.class)
                         .childHandler(new ChannelInitializer<>() {
                             @Override
-                            protected void initChannel(Channel ch) {
-                                ChannelPipeline pipeline = ch.pipeline();
+                            protected void initChannel(Channel channel) {
+                                ChannelPipeline pipeline = channel.pipeline();
                                 pipeline.addLast(new HttpServerCodec());
-                                pipeline.addLast(new TunnelHandler());
+                                pipeline.addLast(new TunnelHandler(props));
                             }
                         });
-                ChannelFuture f = b.bind(80).sync();
-                f.channel().closeFuture().sync();
+                ChannelFuture channelFuture = serverBootstrap.bind(props.getHttpPort()).sync();
+                channelFuture.channel().closeFuture().sync();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             } finally {
@@ -210,83 +205,6 @@ public class ServerApp implements CommandLineRunner {
                 threadFactory,
                 handler
         );
-    }
-
-    static class TunnelHandler extends ChannelInboundHandlerAdapter {
-        private DefaultHttpRequest httpRequest;
-        private final StringBuilder requestBody = new StringBuilder();
-
-        @Override
-        public void channelRead(ChannelHandlerContext ctx, Object msg) throws IOException {
-            System.out.println("msg: " + msg);
-            if (msg instanceof DefaultHttpRequest request) {
-                httpRequest = request;
-            } else if (msg instanceof DefaultHttpContent content && !(msg instanceof LastHttpContent)) {
-                ByteBuf buffer = content.content();
-                requestBody.append(buffer.toString(CharsetUtil.UTF_8));
-            } else if (msg instanceof LastHttpContent lastContent) {
-                String uri = httpRequest.uri();
-                HttpMethod method = httpRequest.method();
-                HttpHeaders headers = httpRequest.headers();
-                ByteBuf content = lastContent.content();
-                requestBody.append(content.toString(CharsetUtil.UTF_8));
-
-                System.out.println("uri: " + uri);
-                System.out.println("method: " + method);
-                System.out.println("headers: " + headers);
-                System.out.println("requestBody: " + requestBody);
-
-                URL restUrl = new URL("http://localhost:8080" + uri);
-                HttpURLConnection connection = (HttpURLConnection) restUrl.openConnection();
-                connection.setRequestMethod(method.name());
-                for (Map.Entry<String, String> entry : headers) {
-                    connection.setRequestProperty(entry.getKey(), entry.getValue());
-                }
-                if (method.equals(HttpMethod.POST) || method.equals(HttpMethod.PUT) || method.equals(HttpMethod.PATCH)) {
-                    connection.setDoOutput(true);
-                    BufferedOutputStream out = new BufferedOutputStream(connection.getOutputStream());
-                    out.write(requestBody.toString().getBytes());
-                    out.flush();
-                }
-
-                int responseCode = connection.getResponseCode();
-                byte[] responseBytes;
-                if (uri.startsWith("/images/")) {
-                    InputStream inputStream = connection.getInputStream();
-                    responseBytes = IOUtils.toByteArray(inputStream);
-                } else {
-                    StringBuilder responseBody;
-                    try (StringWriter writer = new StringWriter()) {
-                        IOUtils.copy(connection.getInputStream(), writer, StandardCharsets.UTF_8);
-                        responseBody = new StringBuilder(writer.toString());
-                    }
-                    System.out.println("responseBody: " + responseBody);
-                    responseBytes = responseBody.toString().getBytes();
-                }
-
-                FullHttpResponse response = new DefaultFullHttpResponse(
-                        HttpVersion.HTTP_1_1,
-                        HttpResponseStatus.valueOf(responseCode),
-                        Unpooled.copiedBuffer(responseBytes));
-
-                ctx.write(response);
-                ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
-                ctx.close();
-                requestBody.setLength(0);
-            } else {
-                ctx.fireChannelRead(msg);
-            }
-        }
-
-        @Override
-        public void channelReadComplete(ChannelHandlerContext ctx) {
-            ctx.flush();
-        }
-
-        @Override
-        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-            ctx.close();
-        }
     }
 
 }

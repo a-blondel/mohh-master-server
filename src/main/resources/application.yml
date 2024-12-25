@@ -1,5 +1,8 @@
 server:
-    port: 8080
+  port: ${SERVER_PORT:8080} # Local port
+
+http:
+  port: ${HTTP_PORT:80} # Tunnel port, exposed to the outside world
 
 ssl:
   protocols: 'SSLv3'
