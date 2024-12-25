@@ -1,4 +1,4 @@
-package com.ea.ws;
+package com.ea.ws.dto;
 
 import lombok.Getter;
 import lombok.Setter;

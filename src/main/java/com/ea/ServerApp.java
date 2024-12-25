@@ -3,6 +3,7 @@ package com.ea;
 import com.ea.config.ServerConfig;
 import com.ea.config.SslSocketThread;
 import com.ea.config.TcpSocketThread;
+import com.ea.config.TunnelHandler;
 import com.ea.enums.Certificates;
 import com.ea.services.GameService;
 import com.ea.services.PersonaService;
@@ -10,6 +11,11 @@ import com.ea.services.SocketManager;
 import com.ea.steps.SocketReader;
 import com.ea.steps.SocketWriter;
 import com.ea.utils.Props;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.http.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -19,9 +25,8 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLSocket;
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.io.*;
+import java.net.*;
 import java.security.Security;
 import java.util.concurrent.*;
 import java.util.function.Function;
@@ -31,7 +36,7 @@ import java.util.function.Function;
 @SpringBootApplication(exclude = { SecurityAutoConfiguration.class })
 public class ServerApp implements CommandLineRunner {
 
-    private ScheduledExecutorService processExpiredGamesThread = Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService processExpiredGamesThread = Executors.newSingleThreadScheduledExecutor();
     private ExecutorService clientHandlingExecutor = Executors.newFixedThreadPool(100);
 
     private final Props props;
@@ -62,13 +67,8 @@ public class ServerApp implements CommandLineRunner {
             System.setProperty("javax.net.debug", "all");
         }
 
+        startTcpTunnelServer();
         try {
-            if (props.isTosEnabled()) {
-                ServerSocket tosTcpServerSocket = serverConfig.createTcpServerSocket(80);
-                startServerThread(tosTcpServerSocket, this::createTcpSocketThread);
-                SSLServerSocket tosSslServerSocket = serverConfig.createSslServerSocket(443, Certificates.TOS);
-                startServerThread(tosSslServerSocket, this::createSslSocketThread);
-            }
             if(props.getHostedGames().contains("mohh_psp_pal")) {
                 ServerSocket mohhPspPalTcpServerSocket = serverConfig.createTcpServerSocket(11180);
                 startServerThread(mohhPspPalTcpServerSocket, this::createTcpSocketThread);
@@ -115,7 +115,7 @@ public class ServerApp implements CommandLineRunner {
     private void startServerThread(ServerSocket serverSocket, Function<Socket, Runnable> runnableFactory) {
         new Thread(() -> {
             try {
-                log.info("Starting server thread for port: {}", serverSocket.getLocalPort());
+                log.info("Starting server thread on port {}", serverSocket.getLocalPort());
                 while (true) {
                     Socket socket = serverSocket.accept();
                     if (!(socket instanceof SSLSocket)) {
@@ -125,6 +125,34 @@ public class ServerApp implements CommandLineRunner {
                 }
             } catch (IOException e) {
                 log.error("Error accepting connections on port: {}", serverSocket.getLocalPort(), e);
+            }
+        }).start();
+    }
+
+    private void startTcpTunnelServer() {
+        new Thread(() -> {
+            log.info("Starting tunnel server on port {}", props.getHttpPort());
+            EventLoopGroup bossGroup = new NioEventLoopGroup();
+            EventLoopGroup workerGroup = new NioEventLoopGroup();
+            try {
+                ServerBootstrap serverBootstrap = new ServerBootstrap();
+                serverBootstrap.group(bossGroup, workerGroup)
+                        .channel(NioServerSocketChannel.class)
+                        .childHandler(new ChannelInitializer<>() {
+                            @Override
+                            protected void initChannel(Channel channel) {
+                                ChannelPipeline pipeline = channel.pipeline();
+                                pipeline.addLast(new HttpServerCodec());
+                                pipeline.addLast(new TunnelHandler(props));
+                            }
+                        });
+                ChannelFuture channelFuture = serverBootstrap.bind(props.getHttpPort()).sync();
+                channelFuture.channel().closeFuture().sync();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            } finally {
+                bossGroup.shutdownGracefully();
+                workerGroup.shutdownGracefully();
             }
         }).start();
     }
@@ -159,9 +187,7 @@ public class ServerApp implements CommandLineRunner {
     }
 
     private void processExpiredGames() {
-        processExpiredGamesThread.scheduleAtFixedRate(() -> {
-            gameService.closeExpiredGames();
-        }, 30, 60, TimeUnit.SECONDS);
+        processExpiredGamesThread.scheduleAtFixedRate(gameService::closeExpiredGames, 30, 60, TimeUnit.SECONDS);
     }
 
     private void setupThreadPool() {
