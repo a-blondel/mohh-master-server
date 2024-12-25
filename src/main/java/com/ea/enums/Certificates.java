@@ -9,9 +9,6 @@ public enum Certificates {
             "OU=Online Technology Group, O=Electronic Arts, Inc., L=Redwood City, ST=California, C=US, CN=OTG3 Certificate Authority"),
     MOHH2_PSP("MOHH2_PSP",
             "CN=pspmoh08.ea.com, OU=Global Online Studio, O=Electronic Arts, Inc., ST=California, C=US",
-            "OU=Online Technology Group, O=Electronic Arts, Inc., L=Redwood City, ST=California, C=US, CN=OTG3 Certificate Authority"),
-    TOS("TOS",
-            "CN=tos.ea.com, OU=Global Online Studio, O=Electronic Arts, Inc., ST=California, C=US",
             "OU=Online Technology Group, O=Electronic Arts, Inc., L=Redwood City, ST=California, C=US, CN=OTG3 Certificate Authority");
 
     private final String name;

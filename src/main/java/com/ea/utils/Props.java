@@ -10,6 +10,12 @@ import java.util.List;
 @Component
 public class Props {
 
+    @Value("${server.port}")
+    private int serverPort;
+
+    @Value("${http.port}")
+    private int httpPort;
+
     @Value("${ssl.protocols}")
     private String sslProtocols;
 
@@ -30,9 +36,6 @@ public class Props {
 
     @Value("${tcp.debug.exclusions}")
     private List<String> tcpDebugExclusions;
-
-    @Value("${tos.enabled}")
-    private boolean tosEnabled;
 
     @Value("${tos.base_url}")
     private String tosBaseUrl;
