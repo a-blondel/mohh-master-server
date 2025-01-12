@@ -1,13 +1,11 @@
 package com.ea;
 
-import com.ea.config.ServerConfig;
-import com.ea.config.SslSocketThread;
-import com.ea.config.TcpSocketThread;
-import com.ea.config.TunnelHandler;
+import com.ea.config.*;
 import com.ea.enums.Certificates;
 import com.ea.services.GameService;
 import com.ea.services.PersonaService;
 import com.ea.services.SocketManager;
+import com.ea.services.UdpSocketManager;
 import com.ea.steps.SocketReader;
 import com.ea.steps.SocketWriter;
 import com.ea.utils.Props;
@@ -105,6 +103,18 @@ public class ServerApp implements CommandLineRunner {
                 SSLServerSocket mohh2WiiNtscSslServerSocket = serverConfig.createSslServerSocket(21121, Certificates.MOHH2_WII);
                 startServerThread(mohh2WiiNtscSslServerSocket, this::createSslSocketThread);
             }
+
+            DatagramSocket mohUdpServerSocketUHS = serverConfig.createUdpServerSocket(3658);
+            UdpSocketManager.addSocket("UHS", mohUdpServerSocketUHS);
+            new Thread(new UdpSocketThread(mohUdpServerSocketUHS)).start();
+            log.info("MoH UHS UDP server started.");
+
+            DatagramSocket mohUdpServerSocketClient = serverConfig.createUdpServerSocket(1110);
+            UdpSocketManager.addSocket("Client", mohUdpServerSocketClient);
+            new Thread(new UdpSocketThread(mohUdpServerSocketClient)).start();
+            log.info("MoH Client UDP server started.");
+
+
         } catch (Exception e) {
             log.error("Error starting servers", e);
         }

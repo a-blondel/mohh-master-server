@@ -131,8 +131,7 @@ public class GameService {
      * @param socketWrapper
      */
     public void gsea(Socket socket, SocketData socketData, SocketWrapper socketWrapper) {
-        List<String> relatedVers = GameVersUtils.getRelatedVers(socketWrapper.getPersonaConnectionEntity().getVers());
-        List<GameEntity> gameEntities = gameRepository.findByVersInAndEndTimeIsNull(relatedVers);
+        List<GameEntity> gameEntities = gameRepository.findAll();
 
         Map<String, String> content = Stream.of(new String[][] {
                 { "COUNT", String.valueOf(gameEntities.size()) },
@@ -153,6 +152,13 @@ public class GameService {
         List<Map<String, String>> games = new ArrayList<>();
 
         for(GameEntity gameEntity : gameEntities) {
+
+            String params = gameEntity.getParams();
+            SocketWrapper socketWrapper = socketManager.getSocketWrapper(socket);
+            if(!socketWrapper.getIsHost().get()) {
+                params = "8,12d,,,,-1,,,,,1,1,1,1,1,1,1,,20,456,474,15f90,122d0022";
+            }
+
             String sysflags = gameEntity.getSysflags();
             if(StringUtils.isNotEmpty(gameEntity.getPass())) {
                 sysflags = String.valueOf(Integer.parseInt(sysflags) | (1 << 16)); // Add password flag (16th bit)
@@ -160,7 +166,7 @@ public class GameService {
             games.add(Stream.of(new String[][] {
                     { "IDENT", String.valueOf(gameEntity.getId()) },
                     { "NAME", gameEntity.getName() },
-                    { "PARAMS", gameEntity.getParams() },
+                    { "PARAMS", params },
                     { "SYSFLAGS", sysflags },
                     { "COUNT", String.valueOf(gameEntity.getGameReports().stream().filter(report -> null == report.getEndTime()).count()) },
                     { "MAXSIZE", String.valueOf(gameEntity.getMaxsize()) },
@@ -409,7 +415,9 @@ public class GameService {
      * @param gameEntity
      */
     public void ses(Socket socket, GameEntity gameEntity) {
-        socketWriter.write(socket, new SocketData("+ses", null, getGameInfo(gameEntity)));
+        SocketWrapper socketWrapper = socketManager.getSocketWrapper(socket);
+        String vers = socketWrapper.getPersonaConnectionEntity().getVers();
+        socketWriter.write(socket, new SocketData("+ses", null, getGameInfo(gameEntity, vers)));
     }
 
     /**
@@ -448,6 +456,7 @@ public class GameService {
     public Map<String, String> getGameInfo(GameEntity gameEntity, String vers) {
         Long gameId = gameEntity.getId();
         SocketWrapper hostSocketWrapperOfGame = socketManager.getHostSocketWrapperOfGame(gameId);
+        SocketWrapper clientSocketWrapper = socketManager.getClientSocketWrapper();
 
         List<GameReportEntity> gameReports = gameReportRepository.findByGameIdAndEndTimeIsNull(gameId);
 
@@ -457,12 +466,18 @@ public class GameService {
         int count = gameReports.size();
         if (!hasHost) count++;
 
+        Socket socket = hasHost ? hostSocketWrapperOfGame.getSocket() : clientSocketWrapper.getSocket();
+        String params = gameEntity.getParams();
+        if(vers.equals("WII/MOH08") || vers.equals("PSP/MOH08")) {
+            params = "8,12d,,,,-1,,,,,1,1,1,1,1,1,1,,20,456,474,15f90,122d0022";
+        }
+
         Map<String, String> content = Stream.of(new String[][] {
                 { "IDENT", String.valueOf(Optional.ofNullable(gameEntity.getOriginalId()).orElse(gameEntity.getId())) },
                 { "NAME", gameEntity.getName() },
                 { "HOST", host },
                 // { "GPSHOST", hostSocketWrapperOfGame.getPers() },
-                { "PARAMS", gameEntity.getParams() },
+                { "PARAMS", params },
                 { "PLATPARAMS", "0" },  // ???
                 { "ROOM", "1" },
                 { "CUSTFLAGS", "413082880" },
@@ -509,7 +524,9 @@ public class GameService {
                 .forEach(gameReportEntity -> {
                     PersonaConnectionEntity personaConnectionEntity = gameReportEntity.getPersonaConnection();
                     PersonaEntity personaEntity = personaConnectionEntity.getPersona();
-                    String ipAddr = personaConnectionEntity.getAddress().replace("/", "").split(":")[0];
+                    //String ipAddr = personaConnectionEntity.getAddress().replace("/", "").split(":")[0];
+                    String ipAddr = personaConnectionEntity.getAddress().equals(socket.getInetAddress().getHostAddress()) ? personaConnectionEntity.getAddress().replace("/", "").split(":")[0] : "192.168.1.90";
+
                     String hostPrefix = gameReportEntity.isHost() ? "@" : "";
                     content.putAll(Stream.of(new String[][] {
                             { "OPID" + idx[0], String.valueOf(personaEntity.getId()) },

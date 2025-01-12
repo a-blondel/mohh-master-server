@@ -37,10 +37,16 @@ public class SocketManager {
     }
 
     public SocketWrapper getHostSocketWrapperOfGame(Long gameId) {
-        return gameReportRepository.findHostAddressByGameId(gameId)
-                .stream()
+        return sockets.values().stream()
+                .filter(wrapper -> wrapper.getIsHost().get())
                 .findFirst()
-                .map(this::getSocketWrapper)
+                .orElse(null);
+    }
+
+    public SocketWrapper getClientSocketWrapper() {
+        return sockets.values().stream()
+                .filter(wrapper -> !wrapper.getIsHost().get())
+                .findFirst()
                 .orElse(null);
     }
 

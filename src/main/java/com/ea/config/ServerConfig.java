@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.*;
 import java.io.IOException;
+import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.security.*;
 import java.security.cert.Certificate;
@@ -68,6 +69,16 @@ public class ServerConfig {
      */
     public ServerSocket createTcpServerSocket(int port) throws IOException {
         return ServerSocketFactory.getDefault().createServerSocket(port);
+    }
+
+
+    /**
+     * Initiate the UDP server socket
+     * @return ServerSocket
+     * @throws IOException
+     */
+    public DatagramSocket createUdpServerSocket(int port) throws IOException {
+        return new DatagramSocket(port);
     }
 
 }
