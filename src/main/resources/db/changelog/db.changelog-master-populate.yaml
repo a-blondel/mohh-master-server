@@ -5,6 +5,8 @@ databaseChangeLog:
       changes:
         - sqlFile:
             path: db/changelog/changes/001-schema.sql
+        - sqlFile:
+            path: db/changelog/changes/002-fix-grenade-typo.sql
   - changeSet:
       id: 002-data
       author: ablondel

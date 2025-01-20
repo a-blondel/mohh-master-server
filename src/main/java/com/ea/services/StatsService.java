@@ -338,7 +338,7 @@ public class StatsService {
                                 getPrecision(personaStatsEntity.getGewrHit(), personaStatsEntity.getGewrShot()),
                                 String.valueOf(personaStatsEntity.getPanzKill()),
                                 getPrecision(personaStatsEntity.getPanzHit(), personaStatsEntity.getPanzShot()),
-                                String.valueOf(personaStatsEntity.getGrenadeKill()),
+                                String.valueOf(personaStatsEntity.getGrenKill()),
                                 String.valueOf(personaStatsEntity.getMeleeKill())
                               )
                         },
