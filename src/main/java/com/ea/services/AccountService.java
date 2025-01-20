@@ -176,7 +176,7 @@ public class AccountService {
     /**
      * Lost username or password
      * If we receive 'MAIL', then we have to send the username matching (if present)
-     * If we receive 'NAME', then we have to send an email to reset the password of the account liked to the username (if present)
+     * If we receive 'NAME', then we have to send an email to reset the password of the account linked to the username (if present)
      */
     public void lost(Socket socket, SocketData socketData) {
 

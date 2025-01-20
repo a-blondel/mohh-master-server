@@ -200,11 +200,11 @@ public class GameReportEntity {
     @Column(name="PANZHEAD")
     private int panzHead;
 
-    @Column(name="GREENTHROW")
-    private int greenThrow;
+    @Column(name="GRENTHROW")
+    private int grenThrow;
 
-    @Column(name="GRENADEKILL")
-    private int grenadeKill;
+    @Column(name="GRENKILL")
+    private int grenKill;
 
     @Column(name="MELEEKILL")
     private int meleeKill;
