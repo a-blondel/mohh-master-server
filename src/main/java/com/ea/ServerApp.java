@@ -55,7 +55,7 @@ public class ServerApp implements CommandLineRunner {
     public void run(String... args) {
         setupThreadPool();
         
-        gameService.closeUnfinishedConnectionsAndGames();
+        //gameService.closeUnfinishedConnectionsAndGames();
 
         Security.setProperty("jdk.tls.disabledAlgorithms", "");
         System.setProperty("https.protocols", props.getSslProtocols());
@@ -108,7 +108,7 @@ public class ServerApp implements CommandLineRunner {
         } catch (Exception e) {
             log.error("Error starting servers", e);
         }
-        processExpiredGames();
+        //processExpiredGames();
         gracefullyExit();
     }
 

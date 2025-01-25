@@ -1,3 +1,8 @@
+UHS emu connector
+
+In `basic.sql`, replace `PERSONA_CONNECTION.ADDRESS` by your machine IP (port can be faked, keep it unchanged) where the UHS emu runs
+
+
 # Master Server for Medal Of Honor Heroes 1 & 2
 
 This project aims to provide a master server for Medal of Honor Heroes 1 (PSP) and 2 (PSP/Wii).  

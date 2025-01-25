@@ -447,15 +447,12 @@ public class GameService {
      */
     public Map<String, String> getGameInfo(GameEntity gameEntity, String vers) {
         Long gameId = gameEntity.getId();
-        SocketWrapper hostSocketWrapperOfGame = socketManager.getHostSocketWrapperOfGame(gameId);
+        //SocketWrapper hostSocketWrapperOfGame = socketManager.getHostSocketWrapperOfGame(gameId);
 
         List<GameReportEntity> gameReports = gameReportRepository.findByGameIdAndEndTimeIsNull(gameId);
 
-        // Workaround when there is no host (serverless patch)
-        boolean hasHost = hostSocketWrapperOfGame != null;
-        String host = hasHost ? "@" + hostSocketWrapperOfGame.getPersonaEntity().getPers() : "@brobot1";
+        String host = "@" + gameEntity.getGameReports().stream().filter(GameReportEntity::isHost).findFirst().get().getPersonaConnection().getPersona().getPers();
         int count = gameReports.size();
-        if (!hasHost) count++;
 
         Map<String, String> content = Stream.of(new String[][] {
                 { "IDENT", String.valueOf(Optional.ofNullable(gameEntity.getOriginalId()).orElse(gameEntity.getId())) },
@@ -492,17 +489,6 @@ public class GameService {
         }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
 
         int[] idx = { 0 };
-
-        if(!hasHost) {
-            content.putAll(Stream.of(new String[][] {
-                    { "OPID" + idx[0], "0" },
-                    { "OPPO" + idx[0], "@brobot1" },
-                    { "ADDR" + idx[0], "127.0.0.1" },
-                    { "LADDR" + idx[0], "127.0.0.1" },
-                    { "MADDR" + idx[0], "" },
-            }).collect(Collectors.toMap(data -> data[0], data -> data[1])));
-            idx[0]++;
-        }
 
         gameReports.stream()
                 .sorted(Comparator.comparing(GameReportEntity::getId))
