@@ -29,15 +29,15 @@ You can follow the progress on the [project board](https://github.com/users/a-bl
 
 ### Features
 - [x] Access Nintendo WFC (Either with [nwc-server](https://github.com/a-blondel/nwc-server) or Wiimmfi) for the Wii version of MoHH2
-- [ ] EA account management
+- [X] EA account management
   - [x] Create account
   - [x] Update account
   - [x] Use account
   - [x] Create persona
   - [x] Delete persona
   - [x] Use persona
-  - [ ] Account recovery (require SMTP)
-  - [ ] Password reset (require SMTP)
+  - [X] Account recovery
+  - [X] Password reset
 - [x] Main menu
   - [x] Player info (Country, Kills, Deaths, Score, Rank, Reputation)
   - [x] Online player count
@@ -105,7 +105,6 @@ Add these lines to your hosts file (`C:\Windows\System32\drivers\etc`) :
 127.0.0.1 pspmoh07.ea.com
 127.0.0.1 wiimoh08.ea.com
 127.0.0.1 pspmoh08.ea.com
-127.0.0.1 tos.ea.com
 127.0.0.1 naswii.nintendowifi.net
 ```
 
@@ -147,9 +146,6 @@ server:
 	
 	local-zone: "pspmoh08.ea.com" static
     local-data: "pspmoh08.ea.com A 192.168.1.1" # CHANGE IT !
-    
-    local-zone: "tos.ea.com" static
-    local-data: "tos.ea.com A 192.168.1.1" # CHANGE IT !
     
     local-zone: "naswii.nintendowifi.net" static
     local-data: "naswii.nintendowifi.net A 192.168.1.1" # CHANGE IT !

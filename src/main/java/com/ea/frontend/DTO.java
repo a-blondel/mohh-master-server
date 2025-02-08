@@ -24,7 +24,7 @@ public class DTO {
             String version,
             String map,
             String params,
-            String pass,
+            boolean hasPassword,
             Instant startTime,
             Integer maxPlayers,
             String hostName,

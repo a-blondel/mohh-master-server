@@ -57,7 +57,7 @@ public class AuthService {
     }
 
     public void news(Socket socket, SocketData socketData) {
-        String tosUrl = props.getTosBaseUrl() + "/legalapp/webterms/us/fr/pc/";
+        String tosUrl = props.getDnsName() + "/legalapp/webterms/us/fr/pc/";
         Map<String, String> content = Stream.of(new String[][] {
                 { "BUDDY_SERVER", props.getTcpHost() },
                 { "BUDDY_PORT", String.valueOf(11192) },

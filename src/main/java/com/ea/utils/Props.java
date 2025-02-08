@@ -16,6 +16,12 @@ public class Props {
     @Value("${http.port}")
     private int httpPort;
 
+    @Value("${http.dns_name}")
+    private String dnsName;
+
+    @Value("${spring.mail.username}")
+    private String emailUsername;
+
     @Value("${ssl.protocols}")
     private String sslProtocols;
 
@@ -36,9 +42,6 @@ public class Props {
 
     @Value("${tcp.debug.exclusions}")
     private List<String> tcpDebugExclusions;
-
-    @Value("${tos.base_url}")
-    private String tosBaseUrl;
 
     @Value("${ssc2.key}")
     private String ssc2Key;
