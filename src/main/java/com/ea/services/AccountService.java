@@ -6,6 +6,7 @@ import com.ea.entities.AccountEntity;
 import com.ea.entities.PersonaConnectionEntity;
 import com.ea.mappers.SocketMapper;
 import com.ea.repositories.AccountRepository;
+import com.ea.repositories.BlacklistRepository;
 import com.ea.steps.SocketWriter;
 import com.ea.utils.AccountUtils;
 import com.ea.utils.EmailUtils;
@@ -34,6 +35,7 @@ public class AccountService {
     private final PasswordUtils passwordUtils;
     private final SocketMapper socketMapper;
     private final AccountRepository accountRepository;
+    private final BlacklistRepository blacklistRepository;
     private final PersonaService personaService;
     private final SocketWriter socketWriter;
     private final EmailUtils emailUtils;
@@ -131,6 +133,14 @@ public class AccountService {
         Optional<AccountEntity> accountEntityOpt = accountRepository.findByName(name);
         if (accountEntityOpt.isPresent()) {
             AccountEntity accountEntity = accountEntityOpt.get();
+
+            if (blacklistRepository.existsByIp(socket.getInetAddress().getHostAddress())
+                    || accountEntity.isBanned()) {
+                socketData.setIdMessage("authblak"); // IP is blacklisted or account is banned (can also use authband)
+                socketWriter.write(socket, socketData);
+                return;
+            }
+
             String decodedPass = passwordUtils.ssc2Decode(pass);
             if (passwordUtils.bCryptMatches(decodedPass, accountEntity.getPass())) {
                 synchronized (this) {

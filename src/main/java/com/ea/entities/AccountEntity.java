@@ -55,6 +55,8 @@ public class AccountEntity {
 
     private LocalDateTime updatedOn;
 
+    private boolean isBanned;
+
     @OneToMany(mappedBy="account", fetch = FetchType.EAGER)
     @OrderBy("id DESC")
     private Set<PersonaEntity> personas;
