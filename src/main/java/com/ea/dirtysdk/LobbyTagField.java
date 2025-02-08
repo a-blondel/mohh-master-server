@@ -1,6 +1,6 @@
 package com.ea.dirtysdk;
 
-public class GameTagField {
+public class LobbyTagField {
 
     static final int[] hexDecode = new int[] {
             128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,128,

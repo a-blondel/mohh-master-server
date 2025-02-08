@@ -58,6 +58,9 @@ public class SocketProcessor {
             case ("auth"):
                 accountService.auth(socket, socketData, socketWrapper);
                 break;
+            case ("lost"):
+                accountService.lost(socket, socketData);
+                break;
             case ("cper"):
                 personaService.cper(socket, socketData, socketWrapper);
                 break;
