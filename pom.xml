@@ -6,7 +6,7 @@
 
     <groupId>com.ea</groupId>
     <artifactId>mohh-master-server</artifactId>
-    <version>1.0.10</version>
+    <version>1.0.11</version>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -53,6 +53,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
+            <version>${org.springframework.boot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
             <version>${org.springframework.boot.version}</version>
         </dependency>
         <!-- Spring Data -->
@@ -218,6 +223,10 @@
                 <exclusion>
                     <groupId>com.jayway.jsonpath</groupId>
                     <artifactId>json-path</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.minidev</groupId>
+                    <artifactId>json-smart</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

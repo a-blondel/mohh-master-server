@@ -7,6 +7,8 @@ databaseChangeLog:
             path: db/changelog/changes/001-schema.sql
         - sqlFile:
             path: db/changelog/changes/002-fix-grenade-typo.sql
+        - sqlFile:
+            path: db/changelog/changes/003-add-blacklist.sql
   - changeSet:
       id: 002-data
       author: ablondel

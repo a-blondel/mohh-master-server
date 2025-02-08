@@ -6,8 +6,10 @@ import com.ea.entities.AccountEntity;
 import com.ea.entities.PersonaConnectionEntity;
 import com.ea.mappers.SocketMapper;
 import com.ea.repositories.AccountRepository;
+import com.ea.repositories.BlacklistRepository;
 import com.ea.steps.SocketWriter;
 import com.ea.utils.AccountUtils;
+import com.ea.utils.EmailUtils;
 import com.ea.utils.PasswordUtils;
 import com.ea.utils.SocketUtils;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.net.Socket;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -32,8 +35,10 @@ public class AccountService {
     private final PasswordUtils passwordUtils;
     private final SocketMapper socketMapper;
     private final AccountRepository accountRepository;
+    private final BlacklistRepository blacklistRepository;
     private final PersonaService personaService;
     private final SocketWriter socketWriter;
+    private final EmailUtils emailUtils;
 
     /**
      * Account creation
@@ -128,6 +133,14 @@ public class AccountService {
         Optional<AccountEntity> accountEntityOpt = accountRepository.findByName(name);
         if (accountEntityOpt.isPresent()) {
             AccountEntity accountEntity = accountEntityOpt.get();
+
+            if (blacklistRepository.existsByIp(socket.getInetAddress().getHostAddress())
+                    || accountEntity.isBanned()) {
+                socketData.setIdMessage("authblak"); // IP is blacklisted or account is banned (can also use authband)
+                socketWriter.write(socket, socketData);
+                return;
+            }
+
             String decodedPass = passwordUtils.ssc2Decode(pass);
             if (passwordUtils.bCryptMatches(decodedPass, accountEntity.getPass())) {
                 synchronized (this) {
@@ -175,11 +188,45 @@ public class AccountService {
 
     /**
      * Lost username or password
-     * If we receive 'MAIL', then we have to send the username matching (if present)
-     * If we receive 'NAME', then we have to send an email to reset the password of the account linked to the username (if present)
+     * If we receive 'MAIL', then we have to send the username(s) matching the email address (if present)
+     * If we receive 'NAME', then we have to send a new password to the email address linked to the account name (if present)
+     *
+     * @param socket The socket to write the response to
+     * @param socketData The socket data
      */
     public void lost(Socket socket, SocketData socketData) {
+        String mail = getValueFromSocket(socketData.getInputMessage(), "MAIL");
+        String name = getValueFromSocket(socketData.getInputMessage(), "NAME");
 
+        if (mail != null) {
+            List<AccountEntity> accountEntities = accountRepository.findByMail(mail);
+            if (!accountEntities.isEmpty()) {
+                String htmlContent = emailUtils.getHtmlTemplate("lost_name.html")
+                        .replace("${banner}", emailUtils.getBanner())
+                        .replace("${accountNames}", accountEntities.stream().map(AccountEntity::getName).collect(Collectors.joining(" - ")));
+                emailUtils.sendEmail("Medal Of Honor Heroes - Lost name", htmlContent, mail);
+            } else {
+                socketData.setIdMessage("lostuusr"); // No account exists with the given email address (EC_UNKNOWN_USER)
+            }
+        } else if (name != null) {
+            Optional<AccountEntity> accountEntityOpt = accountRepository.findByName(name);
+            if (accountEntityOpt.isPresent()) {
+                AccountEntity accountEntity = accountEntityOpt.get();
+                String pass = passwordUtils.generateRandomPassword();
+                accountEntity.setPass(passwordUtils.bCryptEncode(pass));
+                accountEntity.setUpdatedOn(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+                accountRepository.save(accountEntity);
+
+                String htmlContent = emailUtils.getHtmlTemplate("lost_password.html")
+                        .replace("${banner}", emailUtils.getBanner())
+                        .replace("${name}", name)
+                        .replace("${pass}", pass);
+                emailUtils.sendEmail("Medal Of Honor Heroes - Lost password", htmlContent, accountEntity.getMail());
+            } else {
+                socketData.setIdMessage("lostneml"); // No email address is available for the given master account (EC_NO_EMAIL)
+            }
+        }
+        socketWriter.write(socket, socketData);
     }
 
 }

@@ -53,7 +53,7 @@ public class ServerStatusAPI
                 game.version(),
                 MapMoHH.getMapNameByHexId(game.params().split(",")[1]),
                 game.params(),
-                game.pass(),
+                game.pass() != null,
                 api.toUTCInstant(game.startTime()),
                 getMaxPlayerSize(game.maxPlayers()),
                 game.hostName(),

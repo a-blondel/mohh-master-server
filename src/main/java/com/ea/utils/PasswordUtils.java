@@ -1,11 +1,12 @@
 package com.ea.utils;
 
 import com.ea.dirtysdk.CryptSSC2;
-import com.ea.dirtysdk.GameTagField;
+import com.ea.dirtysdk.LobbyTagField;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.security.SecureRandom;
 import java.util.HexFormat;
 
 @Component
@@ -81,10 +82,25 @@ public class PasswordUtils {
         }
 
         input = HexUtils.stringToHex(input);
-        input = GameTagField.decodeString(input);
+        input = LobbyTagField.decodeString(input);
         input = HexUtils.hexToString(input);
 
         return input;
+    }
+
+    /**
+     * Generate a random password
+     * @return The random password
+     */
+    public String generateRandomPassword() {
+        int length = 8;
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder(length);
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        for (int i = 0; i < length; i++) {
+            sb.append(characters.charAt(random.nextInt(characters.length())));
+        }
+        return sb.toString();
     }
 
 

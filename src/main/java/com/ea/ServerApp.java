@@ -53,15 +53,12 @@ public class ServerApp implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        Security.setProperty("jdk.tls.disabledAlgorithms", "");
+        System.setProperty("https.protocols", props.getSslProtocols());
+
         setupThreadPool();
         
         gameService.closeUnfinishedConnectionsAndGames();
-
-        Security.setProperty("jdk.tls.disabledAlgorithms", "");
-        System.setProperty("https.protocols", props.getSslProtocols());
-        System.setProperty("https.cipherSuites", props.getSslCipherSuites());
-        System.setProperty("jdk.tls.client.cipherSuites", props.getSslCipherSuites());
-        System.setProperty("jdk.tls.server.cipherSuites", props.getSslCipherSuites());
 
         if (props.isSslDebugEnabled()) {
             System.setProperty("javax.net.debug", "all");

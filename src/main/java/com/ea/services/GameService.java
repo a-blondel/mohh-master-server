@@ -4,10 +4,7 @@ import com.ea.dto.SocketData;
 import com.ea.dto.SocketWrapper;
 import com.ea.entities.*;
 import com.ea.mappers.SocketMapper;
-import com.ea.repositories.GameReportRepository;
-import com.ea.repositories.GameRepository;
-import com.ea.repositories.PersonaConnectionRepository;
-import com.ea.repositories.PersonaStatsRepository;
+import com.ea.repositories.*;
 import com.ea.steps.SocketWriter;
 import com.ea.utils.GameVersUtils;
 import jakarta.annotation.PreDestroy;
@@ -38,6 +35,8 @@ public class GameService {
     private final GameReportRepository gameReportRepository;
     private final PersonaConnectionRepository personaConnectionRepository;
     private final PersonaStatsRepository personaStatsRepository;
+    private final AccountRepository accountRepository;
+    private final BlacklistRepository blacklistRepository;
     private final SocketMapper socketMapper;
     private final PersonaService personaService;
     private final SocketWriter socketWriter;
@@ -180,6 +179,14 @@ public class GameService {
      * @param socketWrapper
      */
     public void gjoi(Socket socket, SocketData socketData, SocketWrapper socketWrapper) {
+        AccountEntity accountEntity = accountRepository.findById(socketWrapper.getAccountEntity().getId()).orElse(null);
+        if (blacklistRepository.existsByIp(socket.getInetAddress().getHostAddress())
+                || Objects.requireNonNull(accountEntity).isBanned()) {
+            socketData.setIdMessage("gjoiblak"); // IP is blacklisted or account is banned (can also use gjoiband)
+            socketWriter.write(socket, socketData);
+            return;
+        }
+
         String ident = getValueFromSocket(socketData.getInputMessage(), "IDENT");
         Optional<GameEntity> gameEntityOpt = gameRepository.findById(Long.valueOf(ident));
         if(gameEntityOpt.isPresent()) {
@@ -213,6 +220,14 @@ public class GameService {
      * @param socketData
      */
     public void gpsc(Socket socket, SocketData socketData, SocketWrapper socketWrapper) {
+        AccountEntity accountEntity = accountRepository.findById(socketWrapper.getAccountEntity().getId()).orElse(null);
+        if (blacklistRepository.existsByIp(socket.getInetAddress().getHostAddress())
+                || Objects.requireNonNull(accountEntity).isBanned()) {
+            socketData.setIdMessage("gpscblak"); // IP is blacklisted or account is banned (can also use gpscband)
+            socketWriter.write(socket, socketData);
+            return;
+        }
+
         String vers = socketWrapper.getPersonaConnectionEntity().getVers();
         String slus = socketWrapper.getPersonaConnectionEntity().getSlus();
         List<String> relatedVers = GameVersUtils.getRelatedVers(vers);
