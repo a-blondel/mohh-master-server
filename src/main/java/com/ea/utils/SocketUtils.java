@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Map;
 
 @Slf4j
 public class SocketUtils {
@@ -56,6 +57,22 @@ public class SocketUtils {
             }
         }
         return result;
+    }
+
+    /**
+     * Get a map from a socket data
+     * E.g. : data = "key1=value1\nkey2=value2"
+     * getMapFromSocket(data) returns {key1=value1, key2=value2}
+     *
+     * @param data the socket data
+     * @return a map of the data
+     */
+    public static Map<String, String> getMapFromSocket(String data) {
+        return Map.ofEntries(data.lines()
+                .map(line -> line.split("="))
+                .filter(parts -> parts.length > 1)
+                .map(parts -> Map.entry(parts[0], parts[1]))
+                .toArray(Map.Entry[]::new));
     }
 
     /**
