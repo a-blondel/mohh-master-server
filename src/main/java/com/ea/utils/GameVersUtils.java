@@ -10,15 +10,18 @@ public class GameVersUtils {
     public static final String VERS_MOHH_PSP_HOST = "PSP/MOHGPS071";
     public static final String SLUS_MOHH_PSP_HOST = "MOHA10000";
 
-    public static final List<String> VERS_MOHH_PSP = List.of("PSP/MOH07", VERS_MOHH_PSP_HOST);
+    public static final String PSP_MOH_07 = "PSP/MOH07";
+    public static final List<String> VERS_MOHH_PSP = List.of(PSP_MOH_07, VERS_MOHH_PSP_HOST);
     public static final List<String> SLUS_MOHH_PSP_PAL = List.of("ULES00557", "ULES00558", "ULES00559", "ULES00560", "ULES00561", "ULES00562");
     public static final List<String> SLUS_MOHH_PSP_NTSC = List.of("ULUS10141");
 
-    public static final List<String> VERS_MOHH2_PSP = List.of("PSP/MOH08");
+    public static final String PSP_MOH_08 = "PSP/MOH08";
+    public static final List<String> VERS_MOHH2_PSP = List.of(PSP_MOH_08);
     public static final List<String> SLUS_MOHH2_PSP_PAL = List.of("ULES00955", "ULES00956", "ULES00988");
     public static final List<String> SLUS_MOHH2_PSP_NTSC = List.of("ULUS10310");
 
-    public static final List<String> VERS_MOHH2_WII = List.of("WII/MOH08");
+    public static final String WII_MOH_08 = "WII/MOH08";
+    public static final List<String> VERS_MOHH2_WII = List.of(WII_MOH_08);
     public static final List<String> SLUS_MOHH2_WII_PAL = List.of("RM2X", "RM2P");
     public static final List<String> SLUS_MOHH2_WII_NTSC = List.of("RM2E");
 
