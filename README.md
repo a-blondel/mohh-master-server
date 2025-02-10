@@ -41,10 +41,10 @@ You can follow the progress on the [project board](https://github.com/users/a-bl
 - [x] Main menu
   - [x] Player info (Country, Kills, Deaths, Score, Rank, Reputation)
   - [x] Online player count
-- [ ] Lobby
+- [x] Lobby
   - [x] Games available
   - [x] Players in game
-  - [ ] Filter options
+  - [x] Filter options
   - [x] Create game
   - [x] Join game
 - [x] Leaderboards
