@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Component
@@ -55,6 +54,6 @@ public class SocketManager {
         return sockets.values().stream()
                 .filter(wrapper -> wrapper.getIsHost().get())
                 .map(SocketWrapper::getSocket)
-                .collect(Collectors.toList());
+                .toList();
     }
 }

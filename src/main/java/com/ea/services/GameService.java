@@ -136,8 +136,26 @@ public class GameService {
         List<GameEntity> gameEntities = gameRepository.findByVersInAndEndTimeIsNull(relatedVers);
 
         Map<String, String> paramsMap = SocketUtils.getMapFromSocket(socketData.getInputMessage());
+        List<GameEntity> filteredGameEntities = filterGameEntities(gameEntities, paramsMap, vers);
+
+        Map<String, String> content = Collections.singletonMap("COUNT", String.valueOf(filteredGameEntities.size()));
+        socketData.setOutputData(content);
+        socketWriter.write(socket, socketData);
+
+        gam(socket, filteredGameEntities);
+    }
+
+    private List<GameEntity> filterGameEntities(List<GameEntity> gameEntities, Map<String, String> paramsMap, String vers) {
+        int count = Integer.parseInt(paramsMap.get("COUNT"));
+        return gameEntities.stream()
+                .filter(gameEntity -> matchesCriteria(gameEntity, paramsMap, vers))
+                .limit(count)
+                .toList();
+    }
+
+    private boolean matchesCriteria(GameEntity gameEntity, Map<String, String> paramsMap, String vers) {
         String name = paramsMap.get("NAME");
-        String available = paramsMap.get("AVAILABLE") != null ? paramsMap.get("AVAILABLE") : paramsMap.get("AVAIL"); // Game not full (AVAIL on MoHH2)
+        String available = paramsMap.getOrDefault("AVAILABLE", paramsMap.get("AVAIL")); // Game not full (AVAIL on MoHH2)
         String mode = paramsMap.get("MODE");
         String map = paramsMap.get("MAP");
         String ff = paramsMap.get("FF"); // Friendly fire
@@ -146,7 +164,6 @@ public class GameService {
         String maxsize = paramsMap.get("MAXSIZE");
         String sysmaskParam = paramsMap.get("SYSMASK");
         String sysflagsParam = paramsMap.get("SYSFLAGS");
-        String count = paramsMap.get("COUNT");
         String tb = paramsMap.get("TB"); // Team balance
         String ak = paramsMap.get("AK"); // Auto-kick
         String smg = paramsMap.get("SMG");
@@ -157,107 +174,82 @@ public class GameService {
         String baz = paramsMap.get("BAZ");
         String gren = paramsMap.get("GREN");
 
-        List<GameEntity> filteredGameEntities = new ArrayList<>();
-        for (GameEntity gameEntity : gameEntities) {
-            if(Integer.parseInt(count) == filteredGameEntities.size()) {
-                break;
-            }
+        String nameDb = gameEntity.getName().replaceAll("\"", "").toLowerCase();
+        boolean availableDb = gameEntity.getGameReports().stream().filter(report -> null == report.getEndTime()).count() < gameEntity.getMaxsize();
+        String[] params = gameEntity.getParams().split(",");
+        String modeDb = params[0];
+        int mapDb = Integer.parseInt(params[1], 16); // The map in db is in hex, so we need to convert it to decimal
+        boolean hasPwDb = gameEntity.getPass() != null;
+        String ffDb = params[2];
 
-            String nameDb = gameEntity.getName().replaceAll("\"", "").toLowerCase();
-            boolean availableDb = gameEntity.getGameReports().stream()
-                    .filter(report -> null == report.getEndTime()).count() < gameEntity.getMaxsize();
-            String[] params = gameEntity.getParams().split(",");
-            String modeDb = params[0];
-            int mapDb = Integer.parseInt(params[1], 16); // The map in db is in hex, so we need to convert it to decimal
-            boolean hasPwDb = gameEntity.getPass() != null;
-            String ffDb = params[2];
-
-            String aimDb = null;
-            String ctrlDb = null;
-            String tbDb = null;
-            String akDb = null;
-            if (vers.equals(PSP_MOH_07)) {
-                aimDb = params[3];
-            } else if (vers.equals(PSP_MOH_08)) {
-                aimDb = params[3];
-                tbDb = params[4];
-                akDb = params[9];
-            } else if (vers.equals(WII_MOH_08)) {
-                tbDb = params[3];
-                akDb = params[8];
-                ctrlDb = params[9];
-            }
-
-            boolean isRankedDb = vers.equals(PSP_MOH_07) ? StringUtils.isNotEmpty(params[8]) : StringUtils.isNotEmpty(params[17]);
-
-            String smgDb = null;
-            String hmgDb = null;
-            String rifDb = null;
-            String snipDb = null;
-            String shotgDb = null;
-            String bazDb = null;
-            String grenDb = null;
-            if (vers.equals(PSP_MOH_08) || vers.equals(WII_MOH_08)) {
-                smgDb = params[10];
-                hmgDb = params[11];
-                rifDb = params[12];
-                snipDb = params[13];
-                shotgDb = params[14];
-                bazDb = params[15];
-                grenDb = params[16];
-            }
-
-            boolean matchesFlags = true;
-            if (sysmaskParam != null) {
-                int clientMask = Integer.parseInt(sysmaskParam);
-                int clientFlags = 0;
-                if (sysflagsParam != null) {
-                    clientFlags = Integer.parseInt(sysflagsParam);
-                }
-
-                // Calculate game's flags based on ranked and password status
-                int gameFlags = 0;
-                if (hasPwDb) {
-                    gameFlags |= (1 << 16);  // Set bit 16 for password
-                }
-                if (isRankedDb) {
-                    gameFlags |= (1 << 18);  // Set bit 18 for ranked
-                }
-
-                // Only check the bits that the client cares about (specified in mask)
-                matchesFlags = (gameFlags & clientMask) == (clientFlags & clientMask);
-            }
-
-            if ((name == null || nameDb.contains(name.replaceAll("\"", "").toLowerCase()))
-                    && (available.equals("-1") || availableDb)
-                    && (mode.equals("-1") || modeDb.equals(mode))
-                    && (map.equals("-1") || mapDb == Integer.parseInt(map))
-                    && (ff.equals("-1") ||  (ff.equals("0") && ffDb.equals("")) || ffDb.equals(ff))
-                    && (aim == null || aim.equals("-1") || (aim.equals("0") && aimDb.equals("")) || aimDb.equals(aim))
-                    && (ctrl == null || ctrl.equals("-1") || (ctrl.equals("0") && ctrlDb.equals("")) || ctrlDb.equals(ctrl))
-                    && (maxsize == null || gameEntity.getMaxsize() == Integer.parseInt(maxsize))
-                    && matchesFlags
-                    && (tb == null || tb.equals("-1") || (tb.equals("0") && tbDb.equals("")) || tbDb.equals(tb))
-                    && (ak == null || ak.equals("-1") || (ak.equals("0") && akDb.equals("")) || akDb.equals(ak))
-                    && (smg == null || smg.equals("-1") || (smg.equals("0") && smgDb.equals("")) || smgDb.equals(smg))
-                    && (hmg == null || hmg.equals("-1") || (hmg.equals("0") && hmgDb.equals("")) || hmgDb.equals(hmg))
-                    && (rif == null || rif.equals("-1") || (rif.equals("0") && rifDb.equals("")) || rifDb.equals(rif))
-                    && (snip == null || snip.equals("-1") || (snip.equals("0") && snipDb.equals("")) || snipDb.equals(snip))
-                    && (shotg == null || shotg.equals("-1") || (shotg.equals("0") && shotgDb.equals("")) || shotgDb.equals(shotg))
-                    && (baz == null || baz.equals("-1") || (baz.equals("0") && bazDb.equals("")) || bazDb.equals(baz))
-                    && (gren == null || gren.equals("-1") || (gren.equals("0") && grenDb.equals("")) || grenDb.equals(gren))) {
-                filteredGameEntities.add(gameEntity);
-            }
+        String aimDb = null, ctrlDb = null, tbDb = null, akDb = null;
+        if (vers.equals(PSP_MOH_07)) {
+            aimDb = params[3];
+        } else if (vers.equals(PSP_MOH_08)) {
+            aimDb = params[3];
+            tbDb = params[4];
+            akDb = params[9];
+        } else if (vers.equals(WII_MOH_08)) {
+            tbDb = params[3];
+            akDb = params[8];
+            ctrlDb = params[9];
         }
 
-        Map<String, String> content = Stream.of(new String[][] {
-                { "COUNT", String.valueOf(filteredGameEntities.size()) },
-        }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
+        boolean isRankedDb = vers.equals(PSP_MOH_07) ? StringUtils.isNotEmpty(params[8]) : StringUtils.isNotEmpty(params[17]);
 
-        socketData.setOutputData(content);
-        socketWriter.write(socket, socketData);
+        String smgDb = null, hmgDb = null, rifDb = null, snipDb = null, shotgDb = null, bazDb = null, grenDb = null;
+        if (vers.equals(PSP_MOH_08) || vers.equals(WII_MOH_08)) {
+            smgDb = params[10];
+            hmgDb = params[11];
+            rifDb = params[12];
+            snipDb = params[13];
+            shotgDb = params[14];
+            bazDb = params[15];
+            grenDb = params[16];
+        }
 
-        gam(socket, filteredGameEntities);
+        boolean matchesFlags = matchesFlags(sysmaskParam, sysflagsParam, hasPwDb, isRankedDb);
+
+        return (name == null || nameDb.contains(name.replaceAll("\"", "").toLowerCase()))
+                && (available.equals("-1") || availableDb)
+                && (mode.equals("-1") || modeDb.equals(mode))
+                && (map.equals("-1") || mapDb == Integer.parseInt(map))
+                && (ff.equals("-1") || (ff.equals("0") && ffDb.equals("")) || ffDb.equals(ff))
+                && (aim == null || aim.equals("-1") || (aim.equals("0") && aimDb.equals("")) || aimDb.equals(aim))
+                && (ctrl == null || ctrl.equals("-1") || (ctrl.equals("0") && ctrlDb.equals("")) || ctrlDb.equals(ctrl))
+                && (maxsize == null || gameEntity.getMaxsize() == Integer.parseInt(maxsize))
+                && matchesFlags
+                && (tb == null || tb.equals("-1") || (tb.equals("0") && tbDb.equals("")) || tbDb.equals(tb))
+                && (ak == null || ak.equals("-1") || (ak.equals("0") && akDb.equals("")) || akDb.equals(ak))
+                && (smg == null || smg.equals("-1") || (smg.equals("0") && smgDb.equals("")) || smgDb.equals(smg))
+                && (hmg == null || hmg.equals("-1") || (hmg.equals("0") && hmgDb.equals("")) || hmgDb.equals(hmg))
+                && (rif == null || rif.equals("-1") || (rif.equals("0") && rifDb.equals("")) || rifDb.equals(rif))
+                && (snip == null || snip.equals("-1") || (snip.equals("0") && snipDb.equals("")) || snipDb.equals(snip))
+                && (shotg == null || shotg.equals("-1") || (shotg.equals("0") && shotgDb.equals("")) || shotgDb.equals(shotg))
+                && (baz == null || baz.equals("-1") || (baz.equals("0") && bazDb.equals("")) || bazDb.equals(baz))
+                && (gren == null || gren.equals("-1") || (gren.equals("0") && grenDb.equals("")) || grenDb.equals(gren));
+    }
+
+
+    private boolean matchesFlags(String sysmaskParam, String sysflagsParam, boolean hasPwDb, boolean isRankedDb) {
+        if (sysmaskParam == null) {
+            return true;
+        }
+
+        int clientMask = Integer.parseInt(sysmaskParam);
+        int clientFlags = sysflagsParam != null ? Integer.parseInt(sysflagsParam) : 0;
+
+        // Calculate game's flags based on ranked and password status
+        int gameFlags = 0;
+        if (hasPwDb) {
+            gameFlags |= (1 << 16);  // Set bit 16 for password
+        }
+        if (isRankedDb) {
+            gameFlags |= (1 << 18);  // Set bit 18 for ranked
+        }
+
+        // Only check the bits that the client cares about (specified in mask)
+        return (gameFlags & clientMask) == (clientFlags & clientMask);
     }
 
     /**
