@@ -8,6 +8,7 @@ import com.ea.repositories.*;
 import com.ea.steps.SocketWriter;
 import com.ea.utils.GameVersUtils;
 import com.ea.utils.SocketUtils;
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -678,6 +679,19 @@ public class GameService {
     }
 
     /**
+     * Profanity filter a string
+     * @param socket
+     * @param socketData
+     */
+    public void filt(Socket socket, SocketData socketData) {
+        Map<String, String> content = Stream.of(new String[][] {
+                { "TEXT", getValueFromSocket(socketData.getInputMessage(), "TEXT") },
+        }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
+        socketData.setOutputData(content);
+        socketWriter.write(socket, socketData);
+    }
+
+    /**
      * Registers a game entry
      * @param socketWrapper
      * @param gameEntity
@@ -719,10 +733,11 @@ public class GameService {
     }
 
     /**
-     * Set an end time to all unfinished connections and games
+     * Set an end time to all active connections and games when the server boots or shuts down
      */
+    @PostConstruct
     @PreDestroy
-    public void closeUnfinishedConnectionsAndGames() {
+    private void closeActiveConnectionsAndGames() {
         LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
         int gameReportsCleaned = gameReportRepository.setEndTimeForAllUnfinishedGameReports(now);
         int gameCleaned = gameRepository.setEndTimeForAllUnfinishedGames(now);
@@ -731,34 +746,66 @@ public class GameService {
     }
 
     /**
-     * Close expired games (applies to mohh2 only as games aren't hosted)
-     * If no one is in the game after 2 minutes, close it
+     * Data cleanup :
+     * - Manually close expired games (only applies to mohh2 as games aren't hosted)
+     * - Close persona connections, game reports and games (if persona was the host) when the socket is closed
      */
-    public void closeExpiredGames() {
+    public void dataCleanup() {
+        LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+
+        // Manually close expired games
         List<GameEntity> gameEntities = gameRepository.findByEndTimeIsNull();
         gameEntities.forEach(gameEntity -> {
             Set<GameReportEntity> gameReports = gameEntity.getGameReports();
-            if(gameReports.stream().noneMatch(report -> report.isHost() && null == report.getEndTime())) {
-                if(gameReports.stream().allMatch(report -> report.getEndTime().plusSeconds(90).isBefore(LocalDateTime.now()))) {
+            if(gameReports.stream().noneMatch(report -> report.isHost() || null == report.getEndTime())) {
+                if(gameReports.stream().allMatch(report -> report.getEndTime().plusSeconds(90).isBefore(now))) {
                     log.info("Closing expired game: {} - {}", gameEntity.getId(), gameEntity.getName());
-                    gameEntity.setEndTime(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+                    gameEntity.setEndTime(now);
                     gameRepository.save(gameEntity);
                 }
             }
         });
-    }
 
-    /**
-     * Profanity filter a string
-     * @param socket
-     * @param socketData
-     */
-    public void filt(Socket socket, SocketData socketData) {
-        Map<String, String> content = Stream.of(new String[][] {
-                { "TEXT", getValueFromSocket(socketData.getInputMessage(), "TEXT") },
-        }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
-        socketData.setOutputData(content);
-        socketWriter.write(socket, socketData);
+        // Get all active socket addresses from socket manager
+        Set<String> activeAddresses = socketManager.getActiveSocketIdentifiers();
+
+        // Close personna connections for inactive connections
+        List<PersonaConnectionEntity> inactiveConnections = personaConnectionRepository
+                .findByEndTimeIsNullAndAddressNotIn(activeAddresses);
+        if (!inactiveConnections.isEmpty()) {
+            inactiveConnections.forEach(connection -> {
+                log.info("Socket closed for persona connection: {}", connection.getId());
+                connection.setEndTime(now);
+            });
+            personaConnectionRepository.saveAll(inactiveConnections);
+        }
+
+        // Close game reports for inactive connections
+        List<GameReportEntity> inactiveReports = gameReportRepository
+                .findByEndTimeIsNullAndPersonaConnectionAddressNotIn(activeAddresses);
+        if (!inactiveReports.isEmpty()) {
+            inactiveReports.forEach(report -> {
+                log.info("Socket closed for game report: {}", report.getId());
+                report.setEndTime(now);
+            });
+            gameReportRepository.saveAll(inactiveReports);
+        }
+
+        // Close games where host is inactive
+        List<GameEntity> gamesWithInactiveHost = gameRepository.findByEndTimeIsNullAndGameReportsIsHostIsTrueAndGameReportsPersonaConnectionAddressNotIn(activeAddresses);
+        if (!gamesWithInactiveHost.isEmpty()) {
+            gamesWithInactiveHost.forEach(game -> {
+                log.info("Host socket closed for game: {}", game.getId());
+                game.setEndTime(now);
+                game.getGameReports().stream()
+                    .filter(report -> report.getEndTime() == null)
+                    .forEach(report -> {
+                        log.info("Closing game report: {}", report.getId());
+                        report.setEndTime(now);
+                    });
+            });
+            gameRepository.saveAll(gamesWithInactiveHost);
+        }
     }
 
 }

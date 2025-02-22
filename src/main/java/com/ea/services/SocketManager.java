@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import java.net.Socket;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @RequiredArgsConstructor
@@ -33,6 +34,10 @@ public class SocketManager {
 
     public SocketWrapper getSocketWrapper(String identifier) {
         return sockets.get(identifier);
+    }
+
+    public Set<String> getActiveSocketIdentifiers() {
+        return sockets.keySet();
     }
 
     public SocketWrapper getHostSocketWrapperOfGame(Long gameId) {
