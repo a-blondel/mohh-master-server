@@ -15,6 +15,8 @@ import java.util.Optional;
 @Repository
 public interface PersonaConnectionRepository extends JpaRepository<PersonaConnectionEntity, Long> {
 
+    List<PersonaConnectionEntity> findByEndTimeIsNull();
+
     Optional<PersonaConnectionEntity> findByVersAndSlusAndPersonaPersAndIsHostFalseAndEndTimeIsNull(
             String vers,
             String slus,

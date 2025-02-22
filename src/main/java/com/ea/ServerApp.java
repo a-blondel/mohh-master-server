@@ -36,7 +36,7 @@ import java.util.function.Function;
 @SpringBootApplication(exclude = { SecurityAutoConfiguration.class })
 public class ServerApp implements CommandLineRunner {
 
-    private final ScheduledExecutorService processExpiredGamesThread = Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService dataCleanupThread = Executors.newSingleThreadScheduledExecutor();
     private ExecutorService clientHandlingExecutor = Executors.newFixedThreadPool(100);
 
     private final Props props;
@@ -53,18 +53,21 @@ public class ServerApp implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        // System and security properties
         Security.setProperty("jdk.tls.disabledAlgorithms", "");
         System.setProperty("https.protocols", props.getSslProtocols());
-
-        setupThreadPool();
-        
-        gameService.closeUnfinishedConnectionsAndGames();
-
         if (props.isSslDebugEnabled()) {
             System.setProperty("javax.net.debug", "all");
         }
 
+        // Server configuration
+        setupThreadPool();
         startTcpTunnelServer();
+        addGracefulExitOnShutdown();
+
+        // Data integrity
+        startDataCleanupThread();
+
         try {
             if(props.getHostedGames().contains("mohh_psp_pal")) {
                 ServerSocket mohhPspPalTcpServerSocket = serverConfig.createTcpServerSocket(11180);
@@ -105,8 +108,6 @@ public class ServerApp implements CommandLineRunner {
         } catch (Exception e) {
             log.error("Error starting servers", e);
         }
-        processExpiredGames();
-        gracefullyExit();
     }
 
     private void startServerThread(ServerSocket serverSocket, Function<Socket, Runnable> runnableFactory) {
@@ -162,29 +163,33 @@ public class ServerApp implements CommandLineRunner {
         return new SslSocketThread((SSLSocket) socket, socketReader);
     }
 
-    private void gracefullyExit() {
+    private void addGracefulExitOnShutdown() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             log.info("Shutting down...");
-            gameService.closeUnfinishedConnectionsAndGames();
-            processExpiredGamesThread.shutdown();
+            dataCleanupThread.shutdown();
             clientHandlingExecutor.shutdown();
             try {
-                if (!processExpiredGamesThread.awaitTermination(800, TimeUnit.MILLISECONDS)) {
-                    processExpiredGamesThread.shutdownNow();
+                if (!dataCleanupThread.awaitTermination(800, TimeUnit.MILLISECONDS)) {
+                    dataCleanupThread.shutdownNow();
                 }
                 if (!clientHandlingExecutor.awaitTermination(800, TimeUnit.MILLISECONDS)) {
                     clientHandlingExecutor.shutdownNow();
                 }
             } catch (InterruptedException e) {
-                processExpiredGamesThread.shutdownNow();
+                dataCleanupThread.shutdownNow();
                 clientHandlingExecutor.shutdownNow();
             }
-            log.info("Shutdown complete.");
         }));
     }
 
-    private void processExpiredGames() {
-        processExpiredGamesThread.scheduleAtFixedRate(gameService::closeExpiredGames, 30, 60, TimeUnit.SECONDS);
+    private void startDataCleanupThread() {
+        dataCleanupThread.scheduleAtFixedRate(() -> {
+            try {
+                gameService.dataCleanup();
+            } catch (Exception e) {
+                log.error("Error during data cleanup", e);
+            }
+        }, 5, 60, TimeUnit.SECONDS);
     }
 
     private void setupThreadPool() {

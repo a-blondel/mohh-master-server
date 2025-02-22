@@ -16,6 +16,8 @@ import java.util.Optional;
 @Repository
 public interface GameReportRepository extends JpaRepository<GameReportEntity, Long> {
 
+    List<GameReportEntity> findByEndTimeIsNull();
+
     @Query("""
         SELECT pc.address 
         FROM GameReportEntity gr 
