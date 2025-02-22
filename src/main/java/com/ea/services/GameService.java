@@ -766,40 +766,46 @@ public class GameService {
             }
         });
 
-        // Close game reports when the socket is closed
-        List<GameReportEntity> gameReportEntities = gameReportRepository.findByEndTimeIsNull();
-        gameReportEntities.forEach(gameReportEntity -> {
-            if(socketManager.getSocketWrapper(gameReportEntity.getPersonaConnection().getAddress()) == null) {
-                log.info("Socket closed for game report: {}", gameReportEntity.getId());
-                gameReportEntity.setEndTime(now);
-                gameReportRepository.save(gameReportEntity);
-            }
-        });
+        // Get all active socket addresses from socket manager
+        Set<String> activeAddresses = socketManager.getActiveSocketIdentifiers();
 
-        // Close games when the socket is closed and the persona was the host
-        gameEntities.forEach(gameEntity -> {
-            GameReportEntity hostReport = gameEntity.getGameReports().stream().filter(GameReportEntity::isHost).findFirst().orElse(null);
-            if (hostReport != null && socketManager.getSocketWrapper(hostReport.getPersonaConnection().getAddress()) == null) {
-                log.info("Host socket closed for game: {}", gameEntity.getId());
-                gameEntity.getGameReports().stream().filter(report -> null == report.getEndTime()).forEach(report -> {
-                    log.info("Closing game report: {}", report.getId());
-                    report.setEndTime(now);
-                    gameReportRepository.save(report);
-                });
-                gameEntity.setEndTime(now);
-                gameRepository.save(gameEntity);
-            }
-        });
+        // Close personna connections for inactive connections
+        List<PersonaConnectionEntity> inactiveConnections = personaConnectionRepository
+                .findByEndTimeIsNullAndAddressNotIn(activeAddresses);
+        if (!inactiveConnections.isEmpty()) {
+            inactiveConnections.forEach(connection -> {
+                log.info("Socket closed for persona connection: {}", connection.getId());
+                connection.setEndTime(now);
+            });
+            personaConnectionRepository.saveAll(inactiveConnections);
+        }
 
-        // Close persona connections when the socket is closed
-        List<PersonaConnectionEntity> personaConnectionEntities = personaConnectionRepository.findByEndTimeIsNull();
-        personaConnectionEntities.forEach(personaConnectionEntity -> {
-            if(socketManager.getSocketWrapper(personaConnectionEntity.getAddress()) == null) {
-                log.info("Socket closed for persona connection: {}", personaConnectionEntity.getId());
-                personaConnectionEntity.setEndTime(now);
-                personaConnectionRepository.save(personaConnectionEntity);
-            }
-        });
+        // Close game reports for inactive connections
+        List<GameReportEntity> inactiveReports = gameReportRepository
+                .findByEndTimeIsNullAndPersonaConnectionAddressNotIn(activeAddresses);
+        if (!inactiveReports.isEmpty()) {
+            inactiveReports.forEach(report -> {
+                log.info("Socket closed for game report: {}", report.getId());
+                report.setEndTime(now);
+            });
+            gameReportRepository.saveAll(inactiveReports);
+        }
+
+        // Close games where host is inactive
+        List<GameEntity> gamesWithInactiveHost = gameRepository.findByEndTimeIsNullAndGameReportsIsHostIsTrueAndGameReportsPersonaConnectionAddressNotIn(activeAddresses);
+        if (!gamesWithInactiveHost.isEmpty()) {
+            gamesWithInactiveHost.forEach(game -> {
+                log.info("Host socket closed for game: {}", game.getId());
+                game.setEndTime(now);
+                game.getGameReports().stream()
+                    .filter(report -> report.getEndTime() == null)
+                    .forEach(report -> {
+                        log.info("Closing game report: {}", report.getId());
+                        report.setEndTime(now);
+                    });
+            });
+            gameRepository.saveAll(gamesWithInactiveHost);
+        }
     }
 
 }

@@ -10,13 +10,19 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface GameReportRepository extends JpaRepository<GameReportEntity, Long> {
 
-    List<GameReportEntity> findByEndTimeIsNull();
+    /**
+     * Get active game reports where players are disconnected
+     * @param addresses IP addresses of currently connected players
+     * @return list of game reports to stop
+     */
+    List<GameReportEntity> findByEndTimeIsNullAndPersonaConnectionAddressNotIn(Collection<String> addresses);
 
     @Query("""
         SELECT pc.address 

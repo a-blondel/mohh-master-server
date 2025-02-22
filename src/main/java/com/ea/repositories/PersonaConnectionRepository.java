@@ -9,13 +9,19 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface PersonaConnectionRepository extends JpaRepository<PersonaConnectionEntity, Long> {
 
-    List<PersonaConnectionEntity> findByEndTimeIsNull();
+    /**
+     * Get active persona connections where players are disconnected
+     * @param addresses IP addresses of currently connected players
+     * @return list of persona connections to stop
+     */
+    List<PersonaConnectionEntity> findByEndTimeIsNullAndAddressNotIn(Collection<String> addresses);
 
     Optional<PersonaConnectionEntity> findByVersAndSlusAndPersonaPersAndIsHostFalseAndEndTimeIsNull(
             String vers,
