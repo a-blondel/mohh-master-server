@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +17,13 @@ import java.util.Optional;
 public interface GameRepository extends JpaRepository<GameEntity, Long> {
 
     Optional<GameEntity> findById(Long id);
+
+    /**
+     * Get active games where host are disconnected
+     * @param addresses IP addresses of currently connected players/hosts
+     * @return list of games to stop
+     */
+    List<GameEntity> findByEndTimeIsNullAndGameReportsIsHostIsTrueAndGameReportsPersonaConnectionAddressNotIn(Collection<String> addresses);
 
     @Query("SELECT g FROM GameEntity g JOIN g.gameReports gr JOIN gr.personaConnection pc WHERE pc.id = :personaConnectionId AND gr.endTime IS NULL")
     List<GameEntity> findCurrentGameOfPersona(long personaConnectionId);

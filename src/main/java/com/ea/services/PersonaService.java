@@ -70,6 +70,7 @@ public class PersonaService {
             PersonaEntity personaEntity = new PersonaEntity();
             personaEntity.setAccount(socketWrapper.getAccountEntity());
             personaEntity.setPers(pers);
+            personaEntity.setRp(5);
             personaEntity.setCreatedOn(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
 
             PersonaStatsEntity personaStatsEntity = new PersonaStatsEntity();

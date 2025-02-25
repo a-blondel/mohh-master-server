@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 import java.net.Socket;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Component
@@ -36,6 +36,10 @@ public class SocketManager {
         return sockets.get(identifier);
     }
 
+    public Set<String> getActiveSocketIdentifiers() {
+        return sockets.keySet();
+    }
+
     public SocketWrapper getHostSocketWrapperOfGame(Long gameId) {
         return gameReportRepository.findHostAddressByGameId(gameId)
                 .stream()
@@ -55,6 +59,6 @@ public class SocketManager {
         return sockets.values().stream()
                 .filter(wrapper -> wrapper.getIsHost().get())
                 .map(SocketWrapper::getSocket)
-                .collect(Collectors.toList());
+                .toList();
     }
 }
