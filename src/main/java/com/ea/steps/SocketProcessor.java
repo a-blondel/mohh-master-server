@@ -68,7 +68,7 @@ public class SocketProcessor {
                 personaService.pers(socket, socketData, socketWrapper);
                 break;
             case ("dper"):
-                personaService.dper(socket, socketData);
+                personaService.dper(socket, socketData, socketWrapper);
                 break;
             case ("llvl"):
                 personaService.llvl(socket, socketData, socketWrapper);

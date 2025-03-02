@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class PersonaService {
 
+    private final AccountRepository accountRepository;
     private final PersonaRepository personaRepository;
     private final PersonaConnectionRepository personaConnectionRepository;
     private final PersonaStatsRepository personaStatsRepository;
@@ -130,6 +131,12 @@ public class PersonaService {
         Optional<PersonaEntity> personaEntityOpt = personaRepository.findByPers(pers);
         if (personaEntityOpt.isPresent()) {
             PersonaEntity personaEntity = personaEntityOpt.get();
+            if(personaEntity.getDeletedOn() != null) {
+                socketData.setIdMessage("perslock");
+                socketWriter.write(socket, socketData);
+                return;
+            }
+
             synchronized (this) {
                 socketWrapper.setPersonaEntity(personaEntity);
             }
@@ -188,9 +195,30 @@ public class PersonaService {
      * Delete persona
      * @param socket
      * @param socketData
+     * @param socketWrapper
      */
-    public void dper(Socket socket, SocketData socketData) {
+    public void dper(Socket socket, SocketData socketData, SocketWrapper socketWrapper) {
         String pers = getValueFromSocket(socketData.getInputMessage(), "PERS");
+
+        // We need to check if the persona is linked to the account, if not we should ban the account (imposter cheat detection)
+        AccountEntity account = socketWrapper.getAccountEntity();
+        Set<PersonaEntity> personas = account.getPersonas();
+        if(personas.stream().noneMatch(persona -> persona.getPers().equals(pers))) {
+            log.error("Imposter detected, persona {} not linked to account {}", pers, socketWrapper.getAccountEntity().getName());
+            personas.forEach(persona -> {
+                if(persona.getDeletedOn() == null) {
+                    persona.setDeletedOn(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+                    personaRepository.save(persona);
+                }
+            });
+            account.setBanned(true);
+            account.setUpdatedOn(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+            accountRepository.save(account);
+            socketData.setIdMessage("dperband");
+            socketWriter.write(socket, socketData);
+            return;
+        }
+
         Optional<PersonaEntity> personaEntityOpt = personaRepository.findByPers(pers);
         if (personaEntityOpt.isPresent()) {
             PersonaEntity personaEntity = personaEntityOpt.get();
