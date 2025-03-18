@@ -6,7 +6,7 @@
 
     <groupId>com.ea</groupId>
     <artifactId>mohh-master-server</artifactId>
-    <version>1.0.13-SNAPSHOT</version>
+    <version>1.0.13</version>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
