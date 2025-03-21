@@ -20,6 +20,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -415,12 +418,11 @@ public class GameService {
         if(hostSocketWrapper != null) {
             Map<String, String> content = getGameInfo(gameEntity);
             socketWriter.write(hostSocketWrapper.getSocket(), new SocketData("+mgm", null, content));
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            socketWriter.write(hostSocketWrapper.getSocket(), new SocketData("+ses", null, content));
+            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+            executor.schedule(() ->
+                socketWriter.write(hostSocketWrapper.getSocket(), new SocketData("+ses", null, content)),
+                500, TimeUnit.MILLISECONDS
+            );
         }
     }
 
