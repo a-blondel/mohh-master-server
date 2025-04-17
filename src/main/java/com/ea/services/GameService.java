@@ -155,6 +155,10 @@ public class GameService {
     }
 
     private boolean matchesCriteria(GameEntity gameEntity, Map<String, String> paramsMap, String vers) {
+        if (gameEntity.getVers().equals(VERS_MOHH2_PSP_HOST)) { // TODO : delete this when the server is fixed
+            //gameEntity.setParams("8,12d,,1,1,-1,,,a,3,1,1,1,1,1,1,1,1,20,e4a,e68,15f90,122d0022"); // PSP
+            gameEntity.setParams("8,12d,,1,-1,,,a,3,-1,1,1,1,1,1,1,1,1,20,e4a,e68,15f90,122d0022"); // Wii
+        }
         String name = paramsMap.get("NAME");
         String available = paramsMap.getOrDefault("AVAILABLE", paramsMap.get("AVAIL")); // Game not full (AVAIL on MoHH2)
         String mode = paramsMap.get("MODE");
@@ -341,14 +345,13 @@ public class GameService {
         String vers = socketWrapper.getPersonaConnectionEntity().getVers();
         String slus = socketWrapper.getPersonaConnectionEntity().getSlus();
         List<String> relatedVers = GameVersUtils.getRelatedVers(vers);
-        boolean isMohh = relatedVers.equals(VERS_MOHH_PSP);
         GameEntity gameEntityToCreate = socketMapper.toGameEntity(socketData.getInputMessage(), vers, slus);
 
         boolean duplicateName = gameRepository.existsByNameAndVersInAndEndTimeIsNull(gameEntityToCreate.getName(), relatedVers);
         if(duplicateName) {
             socketData.setIdMessage("gpscdupl");
             socketWriter.write(socket, socketData);
-        } else if(isMohh) {
+        } else {
             SocketWrapper gpsSocketWrapper = socketManager.getAvailableGps();
             if(gpsSocketWrapper == null) {
                 socketData.setIdMessage("gpscnfnd");
@@ -385,24 +388,6 @@ public class GameService {
                     }
                 }).start();
             }
-        } else {
-            socketWriter.write(socket, socketData);
-
-            // Set a game server port for MoHH2 if it's not already set (the game set it if there are other games...)
-            String params = gameEntityToCreate.getParams();
-            int serverPortPos = StringUtils.ordinalIndexOf(params, ",", 20);
-            if (serverPortPos != -1 && serverPortPos < params.length()) {
-                String[] paramArray = params.split(",");
-                if (paramArray.length > 19 && paramArray[19].isEmpty()) {
-                    paramArray[19] = Integer.toHexString(1); // Set game server port to 1, so it doesn't conflict with other games
-                    params = String.join(",", paramArray);
-                }
-            }
-            gameEntityToCreate.setParams(params);
-
-            gameRepository.save(gameEntityToCreate);
-            startGameReport(socketWrapper, gameEntityToCreate);
-            ses(socket, gameEntityToCreate);
         }
     }
 
@@ -534,6 +519,10 @@ public class GameService {
      * @param gameEntity
      */
     public void ses(Socket socket, GameEntity gameEntity) {
+        if (gameEntity.getVers().equals(VERS_MOHH2_PSP_HOST)) { // TODO : delete this when the server is fixed
+            //gameEntity.setParams("8,12d,,1,1,-1,,,a,3,1,1,1,1,1,1,1,1,20,e4a,e68,15f90,122d0022"); // PSP
+            gameEntity.setParams("8,12d,,1,-1,,,a,3,-1,1,1,1,1,1,1,1,1,20,e4a,e68,15f90,122d0022"); // Wii
+        }
         socketWriter.write(socket, new SocketData("+ses", null, getGameInfo(gameEntity)));
     }
 
@@ -549,6 +538,10 @@ public class GameService {
         Optional<GameEntity> gameEntityOpt = gameRepository.findById(Long.valueOf(ident));
         if(gameEntityOpt.isPresent()) {
             GameEntity gameEntity = gameEntityOpt.get();
+            if (gameEntity.getVers().equals(VERS_MOHH2_PSP_HOST)) { // TODO : delete this when the server is fixed
+                //gameEntity.setParams("8,12d,,1,1,-1,,,a,3,1,1,1,1,1,1,1,1,20,e4a,e68,15f90,122d0022"); // PSP
+                gameEntity.setParams("8,12d,,1,-1,,,a,3,-1,1,1,1,1,1,1,1,1,20,e4a,e68,15f90,122d0022"); // Wii
+            }
             socketWriter.write(socket, new SocketData("gget", null, getGameInfo(gameEntity, vers)));
         } else {
             socketWriter.write(socket, new SocketData("gget", null, null));
@@ -576,11 +569,8 @@ public class GameService {
 
         List<GameReportEntity> gameReports = gameReportRepository.findByGameIdAndEndTimeIsNull(gameId);
 
-        // Workaround when there is no host (serverless patch)
-        boolean hasHost = hostSocketWrapperOfGame != null;
-        String host = hasHost ? "@" + hostSocketWrapperOfGame.getPersonaEntity().getPers() : "@brobot1";
+        String host = "@" + hostSocketWrapperOfGame.getPersonaEntity().getPers();
         int count = gameReports.size();
-        if (!hasHost) count++;
 
         Map<String, String> content = Stream.of(new String[][] {
                 { "IDENT", String.valueOf(Optional.ofNullable(gameEntity.getOriginalId()).orElse(gameEntity.getId())) },
@@ -617,17 +607,6 @@ public class GameService {
         }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
 
         int[] idx = { 0 };
-
-        if(!hasHost) {
-            content.putAll(Stream.of(new String[][] {
-                    { "OPID" + idx[0], "0" },
-                    { "OPPO" + idx[0], "@brobot1" },
-                    { "ADDR" + idx[0], "127.0.0.1" },
-                    { "LADDR" + idx[0], "127.0.0.1" },
-                    { "MADDR" + idx[0], "" },
-            }).collect(Collectors.toMap(data -> data[0], data -> data[1])));
-            idx[0]++;
-        }
 
         gameReports.stream()
                 .sorted(Comparator.comparing(GameReportEntity::getId))
@@ -746,25 +725,10 @@ public class GameService {
     }
 
     /**
-     * Data cleanup :
-     * - Manually close expired games (only applies to mohh2 as games aren't hosted)
-     * - Close persona connections, game reports and games (if persona was the host) when the socket is closed
+     * Close persona connections, game reports and games (if persona was the host) when the socket is closed
      */
     public void dataCleanup() {
         LocalDateTime now = LocalDateTime.now();
-
-        // Manually close expired games
-        List<GameEntity> gameEntities = gameRepository.findByEndTimeIsNull();
-        gameEntities.forEach(gameEntity -> {
-            Set<GameReportEntity> gameReports = gameEntity.getGameReports();
-            if(gameReports.stream().noneMatch(report -> report.isHost() || null == report.getEndTime())) {
-                if(gameReports.stream().allMatch(report -> report.getEndTime().plusSeconds(90).isBefore(now))) {
-                    log.info("Closing expired game: {} - {}", gameEntity.getId(), gameEntity.getName());
-                    gameEntity.setEndTime(now);
-                    gameRepository.save(gameEntity);
-                }
-            }
-        });
 
         // Get all active socket addresses from socket manager
         Set<String> activeAddresses = socketManager.getActiveSocketIdentifiers();

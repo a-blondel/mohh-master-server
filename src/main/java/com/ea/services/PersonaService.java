@@ -26,6 +26,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.ea.utils.GameVersUtils.VERS_MOHH2_PSP_HOST;
 import static com.ea.utils.GameVersUtils.VERS_MOHH_PSP_HOST;
 import static com.ea.utils.HexUtils.formatHexString;
 import static com.ea.utils.SocketUtils.getValueFromSocket;
@@ -186,7 +187,7 @@ public class PersonaService {
 
             // Check if the persona has stats for this game title ("VERS"), and create them if not
             String vers = socketWrapper.getPersonaConnectionEntity().getVers();
-            if (!vers.equals(VERS_MOHH_PSP_HOST) && personaStatsRepository.findByPersonaIdAndVers(personaEntity.getId(), vers) == null) {
+            if ((!vers.equals(VERS_MOHH_PSP_HOST) || !vers.equals(VERS_MOHH2_PSP_HOST)) && personaStatsRepository.findByPersonaIdAndVers(personaEntity.getId(), vers) == null) {
                 PersonaStatsEntity personaStatsEntity = new PersonaStatsEntity();
                 personaStatsEntity.setPersona(personaEntity);
                 personaStatsEntity.setVers(vers);
