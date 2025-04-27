@@ -241,7 +241,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // Initialize optional stats toggle
 function initOptionalStatsToggle() {
     const optionalStatsToggle = document.getElementById('optional-stats-toggle');
-    setOptionalStatsVisibility(false);
     optionalStatsToggle.addEventListener('change', () => {
         // Update originalData when optional stats are toggled
         originalData = [...window.leaderboardData ? Object.values(window.leaderboardData) : []];
@@ -249,9 +248,6 @@ function initOptionalStatsToggle() {
     });
 }
 
-function setOptionalStatsVisibility(show) {
-    // No-op: rendering is now handled in displayLeaderboard
-}
 
 // Initialize version select
 function initVersionSelect() {

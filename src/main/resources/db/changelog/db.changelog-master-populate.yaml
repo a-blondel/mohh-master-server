@@ -15,4 +15,4 @@ databaseChangeLog:
       dbms: h2
       changes:
         - sqlFile:
-            path: db/samples/full.sql
+            path: db/samples/basic.sql

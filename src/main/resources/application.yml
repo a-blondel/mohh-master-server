@@ -33,7 +33,7 @@ spring:
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME}
+    username: ${MAIL_USERNAME:test@example.com}
     password: ${MAIL_PASSWORD}
     properties:
       mail:
@@ -70,5 +70,3 @@ spring:
     driver-class-name: org.h2.Driver
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master-populate.yaml
-  mail:
-    username: "testing@example.com"

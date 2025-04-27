@@ -5,6 +5,8 @@ import com.ea.enums.MapMoHH;
 import com.ea.repositories.PersonaStatsRepository;
 import com.ea.utils.GameVersUtils;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LeaderboardAPI
 {
+    private static final Logger log = LoggerFactory.getLogger(LeaderboardAPI.class);
     @Autowired
     private final API api;
 
@@ -90,7 +93,7 @@ public class LeaderboardAPI
                     return MapMoHH.getMapNameByCode(mostPlayedMap);
                 }
             } catch (Exception e) {
-                // Skip if method doesn't exist
+                log.info("Could not find map " + i +"\n" + e.getMessage());
             }
         }
         return "Unknown";
