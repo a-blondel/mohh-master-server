@@ -1,5 +1,16 @@
 package com.ea.services;
 
+import com.ea.dto.SocketData;
+import com.ea.dto.SocketWrapper;
+import com.ea.entities.*;
+import com.ea.repositories.*;
+import com.ea.steps.SocketWriter;
+import com.ea.utils.AccountUtils;
+import com.ea.utils.GameVersUtils;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.time.LocalDateTime;
@@ -8,20 +19,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.ea.entities.*;
-import com.ea.repositories.*;
-import com.ea.utils.GameVersUtils;
-import lombok.RequiredArgsConstructor;
-
-import com.ea.dto.SocketData;
-import com.ea.dto.SocketWrapper;
-import com.ea.steps.SocketWriter;
-import com.ea.utils.AccountUtils;
 import static com.ea.utils.GameVersUtils.VERS_MOHH_PSP_HOST;
 import static com.ea.utils.SocketUtils.getValueFromSocket;
-
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
 @Slf4j
 @RequiredArgsConstructor

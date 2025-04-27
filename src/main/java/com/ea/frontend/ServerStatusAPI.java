@@ -1,8 +1,6 @@
 package com.ea.frontend;
 
 import com.ea.enums.MapMoHH;
-import com.ea.frontend.API;
-import com.ea.frontend.DTO;
 import com.ea.repositories.GameReportRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +21,7 @@ public class ServerStatusAPI
     @Autowired
     private final GameReportRepository gameReportRepository;
 
-    @GetMapping("/games/api")
+    @GetMapping("/api/games")
     public ResponseEntity<DTO.MonitorResponse> getGameMonitorJson() {
         List<DTO.GameStatusDTO> gameStats = gameReportRepository.findAllActiveGamesWithStats();
 

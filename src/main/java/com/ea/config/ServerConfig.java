@@ -1,8 +1,8 @@
 package com.ea.config;
 
+import com.ea.dirtysdk.ProtoSSL;
 import com.ea.enums.Certificates;
 import com.ea.utils.Props;
-import com.ea.dirtysdk.ProtoSSL;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -13,10 +13,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.net.ServerSocketFactory;
-import javax.net.ssl.*;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.security.*;
+import java.security.KeyPair;
+import java.security.KeyStore;
 import java.security.cert.Certificate;
 
 @Slf4j
