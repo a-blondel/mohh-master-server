@@ -1,16 +1,15 @@
 package com.ea.dto;
 
-import java.net.Socket;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.ea.entities.AccountEntity;
 import com.ea.entities.PersonaConnectionEntity;
 import com.ea.entities.PersonaEntity;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.net.Socket;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @AllArgsConstructor
 @NoArgsConstructor

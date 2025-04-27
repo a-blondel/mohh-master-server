@@ -1,10 +1,5 @@
 package com.ea.config;
 
-import java.net.Socket;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import com.ea.dto.SocketData;
 import com.ea.dto.SocketWrapper;
 import com.ea.services.GameService;
@@ -12,10 +7,14 @@ import com.ea.services.PersonaService;
 import com.ea.services.SocketManager;
 import com.ea.steps.SocketReader;
 import com.ea.steps.SocketWriter;
-
 import com.ea.utils.SocketUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.net.Socket;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Thread to handle a unique tcp socket

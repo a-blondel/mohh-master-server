@@ -1,3 +1,4 @@
+src/main/resources/META-INF/MANIFEST.MF
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/

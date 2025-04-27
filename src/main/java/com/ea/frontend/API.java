@@ -44,4 +44,14 @@ public class API {
         }
         return (minutes / 60) + "h " + (minutes % 60) + "m";
     }
+
+    public String formatSeconds(int seconds) {
+        if (seconds < 0) {
+            return "0D 0H";
+        }
+        int days = seconds / (60 * 60 * 24);
+        seconds %= (60 * 60 * 24);
+        int hours = seconds / (60 * 60);
+        return String.format("%dD %dH", days, hours);
+    }
 }
