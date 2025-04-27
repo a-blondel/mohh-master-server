@@ -3,7 +3,7 @@
 class GameListManager {
     constructor() {
         // Configuration
-        this.API_ENDPOINT = '/games/api';
+        this.API_ENDPOINT = '/api/games';
         this.REFRESH_INTERVAL = 30000; // 30 seconds
 
         // DOM Elements

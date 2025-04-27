@@ -57,6 +57,19 @@ public enum MapMoHH {
         this.name = name;
     }
 
+    public static String getMapNameByCode(int code)
+    {
+        for (MapMoHH map : MapMoHH.values())
+        {
+            int mapCode = Integer.parseInt(map.code.replaceAll("MAP",""));
+            if (mapCode == code)
+            {
+                return map.name;
+            }
+        }
+        return "";
+    }
+
     public static String getMapNameByHexId(String hexId) {
         for (MapMoHH map : MapMoHH.values()) {
             if (map.hexId.equals(hexId)) {
@@ -94,4 +107,5 @@ public enum MapMoHH {
         }
         return "1";
     }
+
 }

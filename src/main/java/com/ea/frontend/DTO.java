@@ -1,5 +1,7 @@
 package com.ea.frontend;
 
+import lombok.Data;
+
 import java.time.LocalDateTime;
 import java.time.Instant;
 import java.util.List;
@@ -60,6 +62,29 @@ public class DTO {
     public record ConnectionStatsDTO(
             long totalConnections,
             long nonHostConnections,
-            long uniquePersonas
+            long hostConnections
+    ) {}
+
+    public record LeaderboardPlayerDTO(
+            String username,
+            int rank,
+            int kills,
+            int deaths,
+            int headshots,
+            int playTime,
+            String playTimeString,
+            int wins,
+            int losses,
+            String mostPlayedMap,
+            String mostPlayedMode,
+            String favoriteTeam,
+            double accuracy,
+            int dmGames,
+            int tdmGames,
+            int domGames,
+            int demGames,
+            int htlGames,
+            int blGames,
+            int infGames
     ) {}
 }

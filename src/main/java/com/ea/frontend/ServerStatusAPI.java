@@ -23,7 +23,7 @@ public class ServerStatusAPI
     @Autowired
     private final GameReportRepository gameReportRepository;
 
-    @GetMapping("/games/api")
+    @GetMapping("/api/games")
     public ResponseEntity<DTO.MonitorResponse> getGameMonitorJson() {
         List<DTO.GameStatusDTO> gameStats = gameReportRepository.findAllActiveGamesWithStats();
 
