@@ -1,8 +1,6 @@
 package com.ea.frontend;
 
 import com.ea.enums.MapMoHH;
-import com.ea.frontend.API;
-import com.ea.frontend.DTO;
 import com.ea.repositories.GameReportRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

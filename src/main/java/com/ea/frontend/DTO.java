@@ -1,9 +1,7 @@
 package com.ea.frontend;
 
-import lombok.Data;
-
-import java.time.LocalDateTime;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class DTO {

@@ -3,6 +3,7 @@ package com.ea.frontend;
 import com.ea.entities.PersonaStatsEntity;
 import com.ea.enums.MapMoHH;
 import com.ea.repositories.PersonaStatsRepository;
+import com.ea.utils.GameVersUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ public class LeaderboardAPI
 
     @GetMapping("/api/leaderboard")
     public ResponseEntity<List<DTO.LeaderboardPlayerDTO>> getLeaderboardPlayers(
-            @RequestParam(defaultValue = "PSP/MOH07") String vers,
+            @RequestParam(defaultValue = GameVersUtils.PSP_MOH_07) String vers,
             @RequestParam(defaultValue = "0") int offset,
             @RequestParam(defaultValue = "100") int limit)
     {

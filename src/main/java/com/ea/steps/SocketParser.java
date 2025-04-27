@@ -1,19 +1,17 @@
 package com.ea.steps;
 
-import java.net.Socket;
-import java.nio.ByteBuffer;
-
-import org.springframework.stereotype.Component;
-
 import com.ea.dto.SocketData;
 import com.ea.dto.SocketWrapper;
 import com.ea.services.SocketManager;
 import com.ea.utils.HexUtils;
 import com.ea.utils.Props;
 import com.ea.utils.SocketUtils;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+import java.net.Socket;
+import java.nio.ByteBuffer;
 
 @Slf4j
 @RequiredArgsConstructor
