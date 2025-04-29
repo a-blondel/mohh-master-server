@@ -30,6 +30,8 @@ async function fetchLeaderboard() {
 
         originalData = [...allPlayers]; // Store original data
         displayLeaderboard(allPlayers);
+
+        detailedStatsModal();
     } catch (error) {
         console.error('Error fetching leaderboard:', error);
         document.querySelector('tbody').innerHTML = '<tr><td colspan="19">Error loading leaderboard data</td></tr>';
@@ -390,7 +392,6 @@ document.addEventListener('DOMContentLoaded', () => {
     addSorting();
     initThemeToggle();
     initVersionSelect();
-    detailedStatsModal();
     searchUsers();
 
     // Add reset button handler
