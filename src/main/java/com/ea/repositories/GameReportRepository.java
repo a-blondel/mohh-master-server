@@ -39,10 +39,16 @@ public interface GameReportRepository extends JpaRepository<GameReportEntity, Lo
 
     List<GameReportEntity> findByGameIdAndEndTimeIsNull(Long gameId);
 
-    List<GameReportEntity> findByPersonaConnectionPersonaPersAndGameStartTimeAndPlayTimeAndIsHostFalse(
-            String pers,
-            LocalDateTime startTime,
-            int playTime
+    @Query("""
+        SELECT gr FROM GameReportEntity gr
+        WHERE gr.personaConnection.persona.pers = :playerName
+        AND DATE_TRUNC('SECOND', CAST(gr.game.startTime AS timestamp)) = DATE_TRUNC('SECOND', CAST(:startTime AS timestamp))
+        AND gr.playTime = 0
+        AND gr.isHost = false
+    """)
+    List<GameReportEntity> findMatchingGameReports(
+            @Param("playerName") String playerName,
+            @Param("startTime") LocalDateTime startTime
     );
 
     @Transactional
