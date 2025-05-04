@@ -176,6 +176,7 @@ public class PersonaService {
         PersonaConnectionEntity personaConnectionEntity = socketWrapper.getPersonaConnectionEntity();
         personaConnectionEntity.setPersona(personaEntity);
         personaConnectionEntity.setHost(socketWrapper.getIsHost().get());
+        personaConnectionEntity.setStartTime(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
         personaConnectionRepository.save(personaConnectionEntity);
     }
 

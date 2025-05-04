@@ -168,7 +168,6 @@ public class AccountService {
 
                 PersonaConnectionEntity personaConnectionEntity = new PersonaConnectionEntity();
                 personaConnectionEntity.setAddress(SocketUtils.handleLocalhostIp(socket.getRemoteSocketAddress().toString()));
-                personaConnectionEntity.setStartTime(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
                 personaConnectionEntity.setVers(vers);
                 personaConnectionEntity.setSlus(slus);
                 synchronized (this) {
