@@ -103,7 +103,7 @@ public class AccountService {
 
             if (!error && (update || !spam.equals(accountEntity.getSpam()))) {
                 accountEntity.setSpam(spam);
-                accountEntity.setUpdatedOn(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+                accountEntity.setUpdatedOn(LocalDateTime.now());
                 accountRepository.save(accountEntity);
             }
 
@@ -213,7 +213,7 @@ public class AccountService {
                 AccountEntity accountEntity = accountEntityOpt.get();
                 String pass = passwordUtils.generateRandomPassword();
                 accountEntity.setPass(passwordUtils.bCryptEncode(pass));
-                accountEntity.setUpdatedOn(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+                accountEntity.setUpdatedOn(LocalDateTime.now());
                 accountRepository.save(accountEntity);
 
                 String htmlContent = emailUtils.getHtmlTemplate("lost_password.html")

@@ -380,7 +380,7 @@ public class StatsService {
             }
 
             // This is to make sure the end time is set in case something goes wrong in 'gset'
-            LocalDateTime endTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+            LocalDateTime endTime = LocalDateTime.now();
             new Thread(
                     () -> {
                         try {

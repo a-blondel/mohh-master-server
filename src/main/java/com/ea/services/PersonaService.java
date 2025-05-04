@@ -71,7 +71,7 @@ public class PersonaService {
             personaEntity.setAccount(socketWrapper.getAccountEntity());
             personaEntity.setPers(pers);
             personaEntity.setRp(5);
-            personaEntity.setCreatedOn(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+            personaEntity.setCreatedOn(LocalDateTime.now());
 
             PersonaStatsEntity personaStatsEntity = new PersonaStatsEntity();
             personaStatsEntity.setPersona(personaEntity);
@@ -121,7 +121,7 @@ public class PersonaService {
                 }
             } else {
                 log.error("Socket to close not found");
-                personaConnectionEntity.setEndTime(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+                personaConnectionEntity.setEndTime(LocalDateTime.now());
                 personaConnectionRepository.save(personaConnectionEntity);
             }
 
@@ -176,7 +176,7 @@ public class PersonaService {
         PersonaConnectionEntity personaConnectionEntity = socketWrapper.getPersonaConnectionEntity();
         personaConnectionEntity.setPersona(personaEntity);
         personaConnectionEntity.setHost(socketWrapper.getIsHost().get());
-        personaConnectionEntity.setStartTime(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+        personaConnectionEntity.setStartTime(LocalDateTime.now());
         personaConnectionRepository.save(personaConnectionEntity);
     }
 
@@ -186,7 +186,7 @@ public class PersonaService {
     public void endPersonaConnection(SocketWrapper socketWrapper) {
         PersonaConnectionEntity personaConnectionEntity = socketWrapper.getPersonaConnectionEntity();
         if (personaConnectionEntity != null && personaConnectionEntity.getPersona() != null) {
-            personaConnectionEntity.setEndTime(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+            personaConnectionEntity.setEndTime(LocalDateTime.now());
             personaConnectionRepository.save(personaConnectionEntity);
         }
     }
@@ -207,12 +207,12 @@ public class PersonaService {
             log.error("Imposter detected, persona {} not linked to account {}", pers, socketWrapper.getAccountEntity().getName());
             personas.forEach(persona -> {
                 if(persona.getDeletedOn() == null) {
-                    persona.setDeletedOn(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+                    persona.setDeletedOn(LocalDateTime.now());
                     personaRepository.save(persona);
                 }
             });
             account.setBanned(true);
-            account.setUpdatedOn(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+            account.setUpdatedOn(LocalDateTime.now());
             accountRepository.save(account);
             socketData.setIdMessage("dperband");
             socketWriter.write(socket, socketData);
@@ -222,7 +222,7 @@ public class PersonaService {
         Optional<PersonaEntity> personaEntityOpt = personaRepository.findByPers(pers);
         if (personaEntityOpt.isPresent()) {
             PersonaEntity personaEntity = personaEntityOpt.get();
-            personaEntity.setDeletedOn(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+            personaEntity.setDeletedOn(LocalDateTime.now());
             personaRepository.save(personaEntity);
         }
         socketWriter.write(socket, socketData);
