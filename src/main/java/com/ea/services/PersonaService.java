@@ -147,7 +147,7 @@ public class PersonaService {
                     { "LOC", personaEntity.getAccount().getLoc() },
                     { "A", socket.getInetAddress().getHostAddress() },
                     { "LA", socket.getInetAddress().getHostAddress() },
-                    { "IDLE", "80000" },
+                    { "IDLE", "100000" },
             }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
 
             socketData.setOutputData(content);

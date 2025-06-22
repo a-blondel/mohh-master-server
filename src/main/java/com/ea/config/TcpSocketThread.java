@@ -37,7 +37,7 @@ public class TcpSocketThread implements Runnable {
         log.info("TCP client session started: {}", clientSocket.getRemoteSocketAddress());
         try {
             pingExecutor = Executors.newSingleThreadScheduledExecutor();
-            pingExecutor.scheduleAtFixedRate(() -> png(clientSocket), 30, 30, TimeUnit.SECONDS);
+            pingExecutor.scheduleAtFixedRate(() -> png(clientSocket), 20, 20, TimeUnit.SECONDS);
             socketReader.read(clientSocket);
         } catch (Exception e) {
             log.error("Exception in TcpSocketThread: ", e);
