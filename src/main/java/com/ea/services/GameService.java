@@ -83,7 +83,7 @@ public class GameService {
 
         socketWriter.write(socket, socketData);
 
-        LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+        LocalDateTime now = LocalDateTime.now();
         new Thread(() -> {
             try {
                 Thread.sleep(2000);
@@ -517,7 +517,7 @@ public class GameService {
         List<GameEntity> gameEntity = gameRepository.findCurrentGameOfPersona(socketWrapper.getPersonaConnectionEntity().getId());
         if(gameEntity.size() > 0) {
             GameEntity game = gameEntity.get(0);
-            LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+            LocalDateTime now = LocalDateTime.now();
             game.setEndTime(now);
             gameRepository.save(game);
             game.getGameReports().stream().filter(report -> null == report.getEndTime()).forEach(report -> {
@@ -704,7 +704,7 @@ public class GameService {
         gameReportEntity.setGame(gameEntity);
         gameReportEntity.setPersonaConnection(socketWrapper.getPersonaConnectionEntity());
         gameReportEntity.setHost(socketWrapper.getIsHost().get());
-        gameReportEntity.setStartTime(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+        gameReportEntity.setStartTime(LocalDateTime.now());
         gameReportRepository.save(gameReportEntity);
     }
 
@@ -719,13 +719,13 @@ public class GameService {
             GameEntity gameEntity = gameReportEntity.getGame();
             if(socketWrapper.getIsHost().get()) {
                 for(GameReportEntity gameReportToClose : gameReportRepository.findByGameIdAndEndTimeIsNull(gameEntity.getId())) {
-                    gameReportToClose.setEndTime(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+                    gameReportToClose.setEndTime(LocalDateTime.now());
                     gameReportRepository.save(gameReportToClose);
                 }
-                gameEntity.setEndTime(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+                gameEntity.setEndTime(LocalDateTime.now());
                 gameRepository.save(gameEntity);
             } else {
-                gameReportEntity.setEndTime(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+                gameReportEntity.setEndTime(LocalDateTime.now());
                 gameReportRepository.save(gameReportEntity);
                 updateHostInfo(gameEntity);
             }
@@ -738,7 +738,7 @@ public class GameService {
     @PostConstruct
     @PreDestroy
     private void closeActiveConnectionsAndGames() {
-        LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+        LocalDateTime now = LocalDateTime.now();
         int gameReportsCleaned = gameReportRepository.setEndTimeForAllUnfinishedGameReports(now);
         int gameCleaned = gameRepository.setEndTimeForAllUnfinishedGames(now);
         int personaConnectionsCleaned = personaConnectionRepository.setEndTimeForAllUnfinishedPersonaConnections(now);
@@ -751,7 +751,7 @@ public class GameService {
      * - Close persona connections, game reports and games (if persona was the host) when the socket is closed
      */
     public void dataCleanup() {
-        LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+        LocalDateTime now = LocalDateTime.now();
 
         // Manually close expired games
         List<GameEntity> gameEntities = gameRepository.findByEndTimeIsNull();

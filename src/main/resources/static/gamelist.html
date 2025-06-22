@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medal of Honor Heroes Server List</title>
+    <title>Medal of Honor Heroes: Server List</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 </head>
@@ -11,27 +11,35 @@
 <div class="container">
     <header class="header">
         <h1 id="medal-of-honor-heroes-server-list" class="title">
-            Medal of Honor Heroes Server List
+            Medal of Honor: Heroes
         </h1>
 
-        <div class="refresh-section">
-            <div class="auto-refresh">
-                <label class="switch">
-                    <input type="checkbox" id="auto-refresh-toggle" checked>
-                    <span class="slider"></span>
-                </label>
-                Auto-refresh
-            </div>
+        <nav>
+            <a href="/gamelist.html" class="active">Server List</a>
+            <a href="/leaderboard.html">Leaderboard</a>
+        </nav>
 
-            <div class="dark-mode-toggle">
-                <label class="switch">
-                    <input type="checkbox" id="dark-mode-toggle">
-                    <span class="slider"></span>
-                </label>
-                Dark Mode
+        <div class="header-controls">
+            <div class="control-group">
+                <div class="auto-refresh">
+                    <label class="switch">
+                        <input type="checkbox" id="auto-refresh-toggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                    <span class="theme-label">Auto-refresh</span>
+                </div>
+    
+                <span id="last-update" class="theme-label">Last updated: Never</span>
             </div>
-
-            <span id="last-update">Last updated: Never</span>
+            <div class="control-group">
+                <div class="dark-mode-toggle">
+                    <label class="switch">
+                        <input type="checkbox" id="dark-mode-toggle">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="theme-label">Dark Mode</span>
+                </div>
+            </div>
         </div>
     </header>
 

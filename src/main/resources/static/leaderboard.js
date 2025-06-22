@@ -30,6 +30,8 @@ async function fetchLeaderboard() {
 
         originalData = [...allPlayers]; // Store original data
         displayLeaderboard(allPlayers);
+
+        detailedStatsModal();
     } catch (error) {
         console.error('Error fetching leaderboard:', error);
         document.querySelector('tbody').innerHTML = '<tr><td colspan="19">Error loading leaderboard data</td></tr>';
@@ -53,8 +55,6 @@ function getMapName(mapWithMode) {
 function displayLeaderboard(data) {
     const tbody = document.querySelector('tbody');
     tbody.innerHTML = '';
-    const optionalStatsToggle = document.getElementById('optional-stats-toggle');
-    const showOptional = optionalStatsToggle && optionalStatsToggle.checked;
 
     // Update table headers
     const theadRow = document.querySelector('thead tr');
@@ -65,22 +65,9 @@ function displayLeaderboard(data) {
         <th>Kills</th>
         <th>Deaths</th>
         <th>K/D Ratio</th>
-        ${showOptional ? '<th>Accuracy</th>' : ''}
-        ${showOptional ? '<th>KPM</th>' : ''}
-        ${showOptional ? '<th>DPM</th>' : ''}
-        ${showOptional ? '<th>Headshots</th>' : ''}
         <th>Play Time</th>
         <th>Wins</th>
         <th>Losses</th>
-        ${showOptional ? '<th>Fav. Map</th>' : ''}
-        ${showOptional ? '<th>Fav. Team</th>' : ''}
-        ${showOptional ? '<th>Deathmatch</th>' : ''}
-        ${showOptional ? '<th>Team DM</th>' : ''}
-        ${showOptional ? '<th>Domination</th>' : ''}
-        ${showOptional ? '<th>Demolition</th>' : ''}
-        ${showOptional ? '<th>Hold the Line</th>' : ''}
-        ${showOptional ? '<th>Battle Lines</th>' : ''}
-        ${showOptional ? '<th>Infiltration</th>' : ''}
     `;
 
     // Re-add sorting functionality to headers
@@ -99,30 +86,20 @@ function displayLeaderboard(data) {
         const mapName = getMapName(player.mostPlayedMap);
         let rowHtml = `
             <td>${player.rank}</td>
-            <td>${player.username}</td>
+            <td class="username">${player.username} <a href="javascript:;" data-user="${player.username}" class="show-details">Detailed Stats</a></td>
             <td>${score.toLocaleString()}</td>
             <td>${player.kills.toLocaleString()}</td>
             <td>${player.deaths.toLocaleString()}</td>
             <td>${kdRatio}</td>
+            <td>${player.playTimeString}</td>
+            <td>${player.wins.toLocaleString()}</td>
+            <td>${player.losses.toLocaleString()}</td>
         `;
-        if (showOptional) rowHtml += `<td>${player.accuracy.toFixed(2)}%</td>`;
-        if (showOptional) rowHtml += `<td>${kpm}</td>`;
-        if (showOptional) rowHtml += `<td>${dpm}</td>`;
-        if (showOptional) rowHtml += `<td>${player.headshots.toLocaleString()}</td>`;
-        rowHtml += `<td>${player.playTimeString}</td>`;
-        rowHtml += `<td>${player.wins.toLocaleString()}</td>`;
-        rowHtml += `<td>${player.losses.toLocaleString()}</td>`;
-        if (showOptional) rowHtml += `<td>${mapName}</td>`;
-        if (showOptional) rowHtml += `<td>${player.favoriteTeam}</td>`;
-        if (showOptional) rowHtml += `<td>${player.dmGames.toLocaleString()}</td>`;
-        if (showOptional) rowHtml += `<td>${player.tdmGames.toLocaleString()}</td>`;
-        if (showOptional) rowHtml += `<td>${player.domGames.toLocaleString()}</td>`;
-        if (showOptional) rowHtml += `<td>${player.demGames.toLocaleString()}</td>`;
-        if (showOptional) rowHtml += `<td>${player.htlGames.toLocaleString()}</td>`;
-        if (showOptional) rowHtml += `<td>${player.blGames.toLocaleString()}</td>`;
-        if (showOptional) rowHtml += `<td>${player.infGames.toLocaleString()}</td>`;
+        
         const row = document.createElement('tr');
+        row.setAttribute('username', player.username);
         row.innerHTML = rowHtml;
+
         tbody.appendChild(row);
     });
 }
@@ -218,36 +195,208 @@ function resetSorting() {
         th.classList.remove('asc', 'desc');
     });
     
-    // Get the current optional stats state
-    const optionalStatsToggle = document.getElementById('optional-stats-toggle');
-    const showOptional = optionalStatsToggle && optionalStatsToggle.checked;
-    
     // Display original data with current optional stats state
     displayLeaderboard(originalData);
+}
+
+// Enable the detailed stats modal
+function detailedStatsModal()
+{
+    let triggers = document.querySelectorAll('.show-details');
+    let close = document.querySelector('.close-modal');
+
+    if (triggers)
+    {
+        const mBody = document.getElementById('StatsModalBody');
+        const mHeader = document.getElementById('StatsModalHeader');
+
+        triggers.forEach((trigger) => 
+        {
+            trigger.addEventListener('click', function() 
+            {
+                let player = window.leaderboardData[trigger.getAttribute('data-user')];
+
+                const kdRatio = player.deaths === 0 ? player.kills : (player.kills / player.deaths).toFixed(2);
+                const wlRatio = player.wins === 0 ? player.wins : (player.wins / player.losses).toFixed(2);
+                const score = player.kills - player.deaths;
+                const { kpm, dpm } = calculateRates(player.kills, player.deaths, player.playTime);
+                const mapName = getMapName(player.mostPlayedMap);
+                let rowHtml = `
+                    <tr>
+                        <td>Rank</td>
+                        <td>${player.rank}</td>
+                    </tr>
+                    <tr>
+                        <td>Score</td>
+                        <td>${score.toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td>Kills</td>
+                        <td>${player.kills.toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td>Deaths</td>
+                        <td>${player.deaths.toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td>Kill/Death Ratio</td>
+                        <td>${kdRatio}</td>
+                    </tr>
+                    <tr>
+                        <td>Accuracy</td>
+                        <td>${player.accuracy.toFixed(2)}%</td>
+                    </tr>
+                    <tr>
+                        <td>Kills Per Minute (KPM)</td>
+                        <td>${kpm}</td>
+                    </tr>
+                    <tr>
+                        <td>Deaths Per Minute (DPM)</td>
+                        <td>${dpm}</td>
+                    </tr>
+                    <tr>
+                        <td>Total Headshots</td>
+                        <td>${player.headshots.toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td>Total Play Time</td>
+                        <td>${player.playTimeString}</td>
+                    </tr>
+                    <tr>
+                        <td>Total Wins</td>
+                        <td>${player.wins.toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td>Total Losses</td>
+                        <td>${player.losses.toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td>Total Games</td>
+                        <td>${player.wins + player.losses}</td>
+                    </tr>
+                    <tr>
+                        <td>Win/Loss Ratio</td>
+                        <td>${wlRatio}</td>
+                    </tr>
+                    <tr>
+                        <td>Favorite Map</td>
+                        <td>${mapName}</td>
+                    </tr>
+                    <tr>
+                        <td>Favorite Team</td>
+                        <td>${player.favoriteTeam}</td>
+                    </tr>
+                    <tr>
+                        <td>Games Played: Deathmatch</td>
+                        <td>${player.dmGames.toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td>Games Played: Team Deathmatch</td>
+                        <td>${player.tdmGames.toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td>Games Played: Domination</td>
+                        <td>${player.domGames.toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td>Games Played: Demolition</td>
+                        <td>${player.demGames.toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td>Games Played: Hold the Line</td>
+                        <td>${player.htlGames.toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td>Games Played: Battle Lines</td>
+                        <td>${player.blGames.toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td>Games Played: Infiltration</td>
+                        <td>${player.infGames.toLocaleString()}</td>
+                    </tr>
+                `;
+        
+                mHeader.innerHTML = 'Player: ' + player.username;
+                mBody.innerHTML = rowHtml;
+
+                document.body.classList.add('show-modal');
+            });
+        });
+    }
+
+    if (close)
+    {
+        close.addEventListener('click', function()
+        {
+            document.body.classList.remove('show-modal');
+        });
+    }
+}
+
+// Search functionality
+function searchUsers()
+{
+    const searchBar = document.getElementById('UserSearch');
+    let searchDebounce = null;
+
+    searchBar.addEventListener('keyup', function() 
+    {
+        let searchTerm = searchBar.value ?? '';
+        let rows;
+
+        if (searchDebounce)
+        {
+            clearTimeout(searchDebounce);
+        }
+
+        if (searchTerm.length <= 0)
+        {
+            rows = document.querySelectorAll('.leaderboard-table .table-wrapper tbody tr.filtered-out');
+
+            if (rows)
+            {
+                rows.forEach(row => 
+                {
+                    row.classList.remove('filtered-out');
+                });
+            }
+
+            return;
+        }
+
+        searchDebounce = setTimeout(() => 
+        {
+            rows = document.querySelectorAll('.leaderboard-table .table-wrapper tbody tr');
+
+            if (rows)
+            {
+                rows.forEach(row => 
+                {
+                    if (row.getAttribute('username').toLowerCase().search(searchTerm.toLowerCase()) <= -1)
+                    {
+                        row.classList.add('filtered-out');
+                    } else 
+                    {
+                        row.classList.remove('filtered-out');
+                    }
+                });
+            }
+        }, 500);
+    });
 }
 
 // Initialize the leaderboard
 document.addEventListener('DOMContentLoaded', () => {
     fetchLeaderboard();
+
     addSorting();
     initThemeToggle();
-    initOptionalStatsToggle();
     initVersionSelect();
-    
+    searchUsers();
+
     // Add reset button handler
     document.getElementById('reset-sort').addEventListener('click', resetSorting);
 });
-
-// Initialize optional stats toggle
-function initOptionalStatsToggle() {
-    const optionalStatsToggle = document.getElementById('optional-stats-toggle');
-    optionalStatsToggle.addEventListener('change', () => {
-        // Update originalData when optional stats are toggled
-        originalData = [...window.leaderboardData ? Object.values(window.leaderboardData) : []];
-        displayLeaderboard(originalData);
-    });
-}
-
 
 // Initialize version select
 function initVersionSelect() {

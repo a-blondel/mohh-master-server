@@ -70,6 +70,9 @@ public class ServerApp implements CommandLineRunner {
         startDataCleanupThread();
 
         try {
+            ServerSocket eaMessengerTcpServerSocket = serverConfig.createTcpServerSocket(props.getTcpBuddyPort());
+            startServerThread(eaMessengerTcpServerSocket, this::createTcpSocketThread);
+
             if(props.getHostedGames().contains("mohh_psp_pal")) {
                 ServerSocket mohhPspPalTcpServerSocket = serverConfig.createTcpServerSocket(11180);
                 startServerThread(mohhPspPalTcpServerSocket, this::createTcpSocketThread);

@@ -37,6 +37,9 @@ public class Props {
     @Value("${tcp.host}")
     private String tcpHost;
 
+    @Value("${tcp.buddy-port}")
+    private int tcpBuddyPort;
+
     @Value("${tcp.debug.enabled}")
     private boolean tcpDebugEnabled;
 

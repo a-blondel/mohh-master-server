@@ -28,7 +28,7 @@ public class SocketMapper {
         gameEntity.setVers(vers);
         gameEntity.setSlus(slus);
         setFieldsFromSocket(gameEntity, socket, RETURN_CHAR);
-        gameEntity.setStartTime(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+        gameEntity.setStartTime(LocalDateTime.now());
         return gameEntity;
     }
 
@@ -36,7 +36,7 @@ public class SocketMapper {
         AccountEntity accountEntity = new AccountEntity();
         setFieldsFromSocket(accountEntity, socket, RETURN_CHAR);
         accountEntity.setPass(passwordUtils.bCryptEncode(passwordUtils.ssc2Decode(accountEntity.getPass())));
-        accountEntity.setCreatedOn(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+        accountEntity.setCreatedOn(LocalDateTime.now());
         return accountEntity;
     }
 
