@@ -15,9 +15,10 @@ ssl:
 tcp:
   # Must be machine IP if hosting for other machines. Must be WSL IP if using docker through WSL (local only)
   host: ${TCP_HOST_IP:127.0.0.1}
+  buddy-port: ${TCP_BUDDY_PORT:5000}
   debug:
     enabled: ${TCP_DEBUG_ENABLED:false}
-    exclusions: ${TCP_DEBUG_EXCLUSIONS:~png,+snp}
+    exclusions: ${TCP_DEBUG_EXCLUSIONS:~png,+snp,AUTH,EPGT,RGET,PSET,USCH,DISC}
 ssc2:
   key: 51ba8aee64ddfacae5baefa6bf61e009
 
