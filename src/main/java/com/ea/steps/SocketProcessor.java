@@ -31,7 +31,7 @@ public class SocketProcessor {
         switch (socketData.getIdMessage()) {
             case ("~png"):
                 break;
-            case ("@tic"):
+            case ("@tic"), ("AUTH"), ("EPGT"), ("RGET"), ("PSET"), ("USCH"), ("DISC"):
                 socketWriter.write(socket, socketData);
                 break;
             case ("@dir"):

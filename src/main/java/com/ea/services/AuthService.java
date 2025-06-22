@@ -60,7 +60,8 @@ public class AuthService {
         String tosUrl = props.getDnsName() + "/legalapp/webterms/us/fr/pc/";
         Map<String, String> content = Stream.of(new String[][] {
                 { "BUDDY_SERVER", props.getTcpHost() },
-                { "BUDDY_PORT", String.valueOf(11192) },
+                { "BUDDY_PORT", String.valueOf(props.getTcpBuddyPort()) },
+                { "CONTEXT", "buddy" },
                 { "TOSAC_URL", tosUrl },
                 { "TOSA_URL", tosUrl },
                 { "TOS_URL", tosUrl },
