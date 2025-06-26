@@ -44,23 +44,29 @@ public class PersonaService {
      */
     public void cper(Socket socket, SocketData socketData, SocketWrapper socketWrapper) {
         String pers = getValueFromSocket(socketData.getInputMessage(), "PERS");
-        String sanitizedPers = pers.replaceAll("\"", "").trim();
-        if(sanitizedPers.length() < 3) {
+        String normalizedPers = pers.replaceAll("\"", "").trim();
+
+        if(normalizedPers.length() < 3) {
             socketData.setIdMessage("cperinam");
             socketWriter.write(socket, socketData);
             return;
-        } else if(!sanitizedPers.matches("[a-zA-Z0-9 ]+") || !Character.isLetter(sanitizedPers.charAt(0))) {
+        } else if(!normalizedPers.matches("[a-zA-Z0-9 ]+") || !Character.isLetter(normalizedPers.charAt(0))) {
             socketData.setIdMessage("cperiper");
             socketWriter.write(socket, socketData);
             return;
         }
 
-        Optional<PersonaEntity> personaEntityOpt = personaRepository.findByPers(pers);
+        if(normalizedPers.contains(" ")) {
+            // Readd the quotes around the persona name if it contains spaces
+            normalizedPers = "\"" + normalizedPers + "\"";
+        }
+
+        Optional<PersonaEntity> personaEntityOpt = personaRepository.findByPers(normalizedPers);
         if (personaEntityOpt.isPresent()) {
             socketData.setIdMessage("cperdupl");
             int alts = Integer.parseInt(getValueFromSocket(socketData.getInputMessage(), "ALTS"));
             if (alts > 0) {
-                String opts = AccountUtils.suggestNames(alts, pers);
+                String opts = AccountUtils.suggestNames(alts, normalizedPers);
                 Map<String, String> content = Stream.of(new String[][]{
                         { "OPTS", opts }
                 }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
@@ -69,7 +75,7 @@ public class PersonaService {
         } else {
             PersonaEntity personaEntity = new PersonaEntity();
             personaEntity.setAccount(socketWrapper.getAccountEntity());
-            personaEntity.setPers(pers);
+            personaEntity.setPers(normalizedPers);
             personaEntity.setRp(5);
             personaEntity.setCreatedOn(LocalDateTime.now());
 
@@ -200,28 +206,29 @@ public class PersonaService {
     public void dper(Socket socket, SocketData socketData, SocketWrapper socketWrapper) {
         String pers = getValueFromSocket(socketData.getInputMessage(), "PERS");
 
-        // We need to check if the persona is linked to the account, if not we should ban the account (imposter cheat detection)
-        AccountEntity account = socketWrapper.getAccountEntity();
-        Set<PersonaEntity> personas = account.getPersonas();
-        if(personas.stream().noneMatch(persona -> persona.getPers().equals(pers))) {
-            log.error("Imposter detected, persona {} not linked to account {}", pers, socketWrapper.getAccountEntity().getName());
-            personas.forEach(persona -> {
-                if(persona.getDeletedOn() == null) {
-                    persona.setDeletedOn(LocalDateTime.now());
-                    personaRepository.save(persona);
-                }
-            });
-            account.setBanned(true);
-            account.setUpdatedOn(LocalDateTime.now());
-            accountRepository.save(account);
-            socketData.setIdMessage("dperband");
-            socketWriter.write(socket, socketData);
-            return;
-        }
-
         Optional<PersonaEntity> personaEntityOpt = personaRepository.findByPers(pers);
         if (personaEntityOpt.isPresent()) {
             PersonaEntity personaEntity = personaEntityOpt.get();
+            // If persona is not linked to the logged-in account, we should ban the account (imposter cheat detection)
+            AccountEntity account = socketWrapper.getAccountEntity();
+            if(!personaEntity.getAccount().getId().equals(account.getId())) {
+                log.error("Imposter detected, persona {} not linked to account {}", pers, socketWrapper.getAccountEntity().getName());
+                Set<PersonaEntity> personas = account.getPersonas();
+                personas.forEach(persona -> {
+                    if(persona.getDeletedOn() == null) {
+                        persona.setDeletedOn(LocalDateTime.now());
+                        personaRepository.save(persona);
+                    }
+                });
+                account.setBanned(true);
+                account.setUpdatedOn(LocalDateTime.now());
+                accountRepository.save(account);
+                socketData.setIdMessage("dperband");
+                socketWriter.write(socket, socketData);
+                return;
+            }
+
+            // If the persona is linked to the account, we can delete it
             personaEntity.setDeletedOn(LocalDateTime.now());
             personaRepository.save(personaEntity);
         }
