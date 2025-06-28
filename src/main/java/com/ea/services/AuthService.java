@@ -31,11 +31,11 @@ public class AuthService {
     public void dir(Socket socket, SocketData socketData) {
         String slus = getValueFromSocket(socketData.getInputMessage(), "SLUS");
 
-        Map<String, String> content = Stream.of(new String[][] {
+        Map<String, String> content = Stream.of(new String[][]{
                 // { "DIRECT", "0" }, // 0x8001FC04
                 // if DIRECT == 0 then read ADDR and PORT
-                { "ADDR", props.getTcpHost() }, // 0x8001FC18
-                { "PORT", String.valueOf(GameVersUtils.getTcpPort(slus)) }, // 0x8001fc30
+                {"ADDR", props.getTcpHost()}, // 0x8001FC18
+                {"PORT", String.valueOf(GameVersUtils.getTcpPort(slus))}, // 0x8001fc30
                 // { "SESS", "0" }, // 0x8001fc48 %s-%s-%08x 0--498ea96f
                 // { "MASK", "0" }, // 0x8001fc60
                 // if ADDR == 0 then read DOWN
@@ -58,13 +58,15 @@ public class AuthService {
 
     public void news(Socket socket, SocketData socketData) {
         String tosUrl = props.getDnsName() + "/legalapp/webterms/us/fr/pc/";
-        Map<String, String> content = Stream.of(new String[][] {
-                { "BUDDY_SERVER", props.getTcpHost() },
-                { "BUDDY_PORT", String.valueOf(props.getTcpBuddyPort()) },
-                { "CONTEXT", "buddy" },
-                { "TOSAC_URL", tosUrl },
-                { "TOSA_URL", tosUrl },
-                { "TOS_URL", tosUrl },
+        Map<String, String> content = Stream.of(new String[][]{
+                {"BUDDY_SERVER", props.getTcpHost()},
+                {"BUDDY_PORT", String.valueOf(props.getTcpBuddyPort())},
+                {"CONTEXT", "buddy"},
+                {"TOSAC_URL", tosUrl},
+                {"TOSA_URL", tosUrl},
+                {"TOS_URL", tosUrl},
+                {"FAQ_URL", tosUrl},
+                {"EACONNECT_WEBOFFER_URL", tosUrl},
         }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
 
         socketData.setOutputData(content);
@@ -77,11 +79,11 @@ public class AuthService {
 
         Map<String, String> content;
         // Request separates attributes either by 0x20 or 0x0a...
-        if(null == stats && null == inGame) { // If both NULL, then the separator is 0x20, so we know which request was sent
-            content = Stream.of(new String[][] {
-                    { "MORE", "0" },
-                    { "SLOTS", "4" },
-                    { "STATS", "0" },
+        if (null == stats && null == inGame) { // If both NULL, then the separator is 0x20, so we know which request was sent
+            content = Stream.of(new String[][]{
+                    {"MORE", "0"},
+                    {"SLOTS", "4"},
+                    {"STATS", "0"},
 //                    { "GAMES", "1" },
 //                    { "ROOMS", "1" },
 //                    { "USERS", "1" },
@@ -100,21 +102,21 @@ public class AuthService {
                 String mesgTypes = getValueFromSocket(socketData.getInputMessage(), "MESGTYPES");
                 String users = getValueFromSocket(socketData.getInputMessage(), "USERS");
                 String userSets = getValueFromSocket(socketData.getInputMessage(), "USERSETS");
-                content = Stream.of(new String[][] {
-                        { "INGAME", inGame },
-                        { "MESGS", mesgs },
-                        { "MESGTYPES", mesgTypes },
-                        { "USERS", users },
-                        { "GAMES", games },
-                        { "MYGAME", myGame },
-                        { "ROOMS", rooms },
-                        { "ASYNC", async },
-                        { "USERSETS", userSets },
-                        { "STATS", stats },
+                content = Stream.of(new String[][]{
+                        {"INGAME", inGame},
+                        {"MESGS", mesgs},
+                        {"MESGTYPES", mesgTypes},
+                        {"USERS", users},
+                        {"GAMES", games},
+                        {"MYGAME", myGame},
+                        {"ROOMS", rooms},
+                        {"ASYNC", async},
+                        {"USERSETS", userSets},
+                        {"STATS", stats},
                 }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
             } else {
-                content = Stream.of(new String[][] {
-                        { "INGAME", inGame },
+                content = Stream.of(new String[][]{
+                        {"INGAME", inGame},
                 }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
             }
         }
@@ -122,11 +124,11 @@ public class AuthService {
         socketData.setOutputData(content);
         socketWriter.write(socket, socketData, SPACE_CHAR);
 
-        if(null != stats || null != inGame) {
+        if (null != stats || null != inGame) {
             personaService.who(socket, socketWrapper);
         }
 
-        if(socketWrapper != null && socketWrapper.getIsHost().get()) {
+        if (socketWrapper != null && socketWrapper.getIsHost().get()) {
             joinRoom(socket, socketData, socketWrapper);
         }
 

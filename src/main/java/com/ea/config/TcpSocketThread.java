@@ -1,5 +1,6 @@
 package com.ea.config;
 
+import com.ea.dto.BuddySocketWrapper;
 import com.ea.dto.SocketData;
 import com.ea.dto.SocketWrapper;
 import com.ea.services.GameService;
@@ -51,6 +52,11 @@ public class TcpSocketThread implements Runnable {
                 gameService.endGameReport(socketWrapper);
                 personaService.endPersonaConnection(socketWrapper);
                 socketManager.removeSocket(socketWrapper.getIdentifier());
+            }
+
+            BuddySocketWrapper buddySocketWrapper = socketManager.getBuddySocketWrapper(clientSocket);
+            if (buddySocketWrapper != null) {
+                socketManager.removeBuddySocket(buddySocketWrapper.getIdentifier());
             }
             log.info("TCP client session ended: {} {}", clientSocket.getRemoteSocketAddress(), playerInfo);
         }
