@@ -21,7 +21,6 @@ import java.lang.reflect.Method;
 import java.net.Socket;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -42,18 +41,19 @@ public class StatsService {
 
     /**
      * Retrieve ranking categories
+     *
      * @param socket
      * @param socketData
      */
     public void cate(Socket socket, SocketData socketData) {
-        Map<String, String> content = Stream.of(new String[][] {
-                { "CC", "6" }, // <total # of categories in this view>
-                { "IC", "6" }, // <total # of indices in this view>
-                { "VC", "6" }, // <total # of variations in this view>
-                { "U", "6" },
-                { "SYMS", "6" },
-                { "SS", "6" },
-                { "R", String.join(",", Collections.nCopies(66, "1")) }, // <comma-separated-list of category,index,view data>
+        Map<String, String> content = Stream.of(new String[][]{
+                {"CC", "6"}, // <total # of categories in this view>
+                {"IC", "6"}, // <total # of indices in this view>
+                {"VC", "6"}, // <total # of variations in this view>
+                {"U", "6"},
+                {"SYMS", "6"},
+                {"SS", "6"},
+                {"R", String.join(",", Collections.nCopies(66, "1"))}, // <comma-separated-list of category,index,view data>
         }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
 
         socketData.setOutputData(content);
@@ -62,6 +62,7 @@ public class StatsService {
 
     /**
      * Request ranking snapshot
+     *
      * @param socket
      * @param socketData
      * @param socketWrapper
@@ -97,141 +98,141 @@ public class StatsService {
             personaStatsEntityList = personaStatsRepository.getWeaponLeaderboardByVers(vers, 100, offset);
         }
 
-        Map<String, String> content = Stream.of(new String[][] {
-                { "CHAN", chan }, // <matching request value>
-                { "START", start }, // <actual start used>
-                { "RANGE", String.valueOf(personaStatsEntityList.size()) }, // <actual range used>
-                { "SEQN", seqn }, // <value provided in request>
-                { "CC", columnNumber }, // <number of columns>
-                { "FC", "1" }, // <number of fixed columns>
-                { "DESC", "" }, // <list-description>
-                { "PARAMS", "1,1,1,1,1,1,1,1,1,1,1,1" }, // <comma-separated list of integer parameters>
+        Map<String, String> content = Stream.of(new String[][]{
+                {"CHAN", chan}, // <matching request value>
+                {"START", start}, // <actual start used>
+                {"RANGE", String.valueOf(personaStatsEntityList.size())}, // <actual range used>
+                {"SEQN", seqn}, // <value provided in request>
+                {"CC", columnNumber}, // <number of columns>
+                {"FC", "1"}, // <number of fixed columns>
+                {"DESC", ""}, // <list-description>
+                {"PARAMS", "1,1,1,1,1,1,1,1,1,1,1,1"}, // <comma-separated list of integer parameters>
         }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
 
         if ("1".equals(cols) && Set.of(MY_LEADERBOARD.mohh2Id, TOP_100.mohh2Id).contains(rankingCategory)) {
-            content.putAll(Stream.of(new String[][] {
-                    { "CN0", "RNK" }, // <column-name>
-                    { "CD0", "\"Leaderboard Ranking\"" }, // <column-name> (selected)
+            content.putAll(Stream.of(new String[][]{
+                    {"CN0", "RNK"}, // <column-name>
+                    {"CD0", "\"Leaderboard Ranking\""}, // <column-name> (selected)
                     //{ "CP0", "1" }, // <column-parameter>
                     //{ "CW0", "50" }, // <column-width>
                     //{ "CT0", "1" }, // <column-type>
                     //{ "CS0", "1" }, // <column-style>
-                    { "CN1", "Persona" },
-                    { "CD1", "Persona" },
-                    { "CN2", "Score" },
-                    { "CD2", "Score" },
-                    { "CN3", "Kills" },
-                    { "CD3", "\"Total Kills\"" },
-                    { "CN4", "Deaths" },
-                    { "CD4", "\"Total Deaths\"" },
-                    { "CN5", isMohh ? "Time" : "Accuracy" },
-                    { "CD5", isMohh ? "\"Total Time Played Online\"" : "\"Accuracy %\"" },
-                    { "CN6", isMohh ? "Accuracy" : "Time" },
-                    { "CD6", isMohh ?  "\"Accuracy %\"" : "\"Total Time Played Online\"" },
-                    { "CN7", "KPM" },
-                    { "CD7", "\"Kills Per Minute\"" },
-                    { "CN8", "DPM" },
-                    { "CD8", "\"Deaths Per Minute\"" },
-                    { "CN9", isMohh ? "\"Fav. Map\"" : "Headshots" },
-                    { "CD9", isMohh ? "\"Most Played Map\"" : "\"Total Headshots\"" },
-                    { "CN10", isMohh ? "\"Fav. Mode\"" : "\"Fav. Map\"" },
-                    { "CD10", isMohh ? "\"Most Played Mode\"" : "\"Most Played Map\"" },
-                    { "CN11", isMohh ? "\"Fav. Team\"" : "\"Fav. Mode\"" },
-                    { "CD11", isMohh ? "\"Most Played Team\"" : "\"Most Played Mode\"" },
-                    { "CN12", isMohh ? "Headshots" : "\"Fav. Team\"" },
-                    { "CD12", isMohh ? "\"Total Headshots\"" : "\"Most Played Team\"" },
-                    { "CN13", "Wins" },
-                    { "CD13", "\"Total Wins\"" },
-                    { "CN14", "Losses" },
-                    { "CD14", "\"Total Losses\"" },
-                    { "CN15", "\"DM RND\"" },
-                    { "CD15", "\"Deathmatch Rounds Played\"" },
-                    { "CN16", "\"INF RND\"" },
-                    { "CD16", "\"Infiltration Rounds Played\"" },
+                    {"CN1", "Persona"},
+                    {"CD1", "Persona"},
+                    {"CN2", "Score"},
+                    {"CD2", "Score"},
+                    {"CN3", "Kills"},
+                    {"CD3", "\"Total Kills\""},
+                    {"CN4", "Deaths"},
+                    {"CD4", "\"Total Deaths\""},
+                    {"CN5", isMohh ? "Time" : "Accuracy"},
+                    {"CD5", isMohh ? "\"Total Time Played Online\"" : "\"Accuracy %\""},
+                    {"CN6", isMohh ? "Accuracy" : "Time"},
+                    {"CD6", isMohh ? "\"Accuracy %\"" : "\"Total Time Played Online\""},
+                    {"CN7", "KPM"},
+                    {"CD7", "\"Kills Per Minute\""},
+                    {"CN8", "DPM"},
+                    {"CD8", "\"Deaths Per Minute\""},
+                    {"CN9", isMohh ? "\"Fav. Map\"" : "Headshots"},
+                    {"CD9", isMohh ? "\"Most Played Map\"" : "\"Total Headshots\""},
+                    {"CN10", isMohh ? "\"Fav. Mode\"" : "\"Fav. Map\""},
+                    {"CD10", isMohh ? "\"Most Played Mode\"" : "\"Most Played Map\""},
+                    {"CN11", isMohh ? "\"Fav. Team\"" : "\"Fav. Mode\""},
+                    {"CD11", isMohh ? "\"Most Played Team\"" : "\"Most Played Mode\""},
+                    {"CN12", isMohh ? "Headshots" : "\"Fav. Team\""},
+                    {"CD12", isMohh ? "\"Total Headshots\"" : "\"Most Played Team\""},
+                    {"CN13", "Wins"},
+                    {"CD13", "\"Total Wins\""},
+                    {"CN14", "Losses"},
+                    {"CD14", "\"Total Losses\""},
+                    {"CN15", "\"DM RND\""},
+                    {"CD15", "\"Deathmatch Rounds Played\""},
+                    {"CN16", "\"INF RND\""},
+                    {"CD16", "\"Infiltration Rounds Played\""},
             }).collect(Collectors.toMap(data -> data[0], data -> data[1])));
             if (isMohh) {
-                content.putAll(Stream.of(new String[][] {
-                        { "CN17", "\"DOM RND\"" },
-                        { "CD17", "\"Domination Rounds Played\"" },
-                        { "CN18", "\"DEM RND\"" },
-                        { "CD18", "\"Demolition Rounds Played\"" },
-                        { "CN19", "\"HTL RND\"" },
-                        { "CD19", "\"Hold the Line Rounds Played\"" },
-                        { "CN20", "\"BL RND\"" },
-                        { "CD20", "\"Battle Lines Rounds Played\"" },
+                content.putAll(Stream.of(new String[][]{
+                        {"CN17", "\"DOM RND\""},
+                        {"CD17", "\"Domination Rounds Played\""},
+                        {"CN18", "\"DEM RND\""},
+                        {"CD18", "\"Demolition Rounds Played\""},
+                        {"CN19", "\"HTL RND\""},
+                        {"CD19", "\"Hold the Line Rounds Played\""},
+                        {"CN20", "\"BL RND\""},
+                        {"CD20", "\"Battle Lines Rounds Played\""},
                 }).collect(Collectors.toMap(data -> data[0], data -> data[1])));
             } else {
-                content.putAll(Stream.of(new String[][] {
-                        { "CN17", "\"TDM RND\"" },
-                        { "CD17", "\"Team Deathmatch Rounds Played\"" },
+                content.putAll(Stream.of(new String[][]{
+                        {"CN17", "\"TDM RND\""},
+                        {"CD17", "\"Team Deathmatch Rounds Played\""},
                 }).collect(Collectors.toMap(data -> data[0], data -> data[1])));
             }
         } else if ("1".equals(cols) && WEAPON_LEADERS.mohh2Id.equals(rankingCategory)) {
-            content.putAll(Stream.of(new String[][] {
-                    { "CN0", "RNK" },
-                    { "CD0", "\"Leaderboard Ranking\"" },
-                    { "CN1", "Persona" },
-                    { "CD1", "Persona" },
-                    { "CN2", "Kills" },
-                    { "CD2", "\"Total Kills\"" },
-                    { "CN3", "Accuracy" },
-                    { "CD3", "\"Accuracy %\"" },
-                    { "CN4", "\".45 Kill\"" },
-                    { "CD4", "\"M1911 Pistol Kills\"" },
-                    { "CN5", "\".45 Acc\"" },
-                    { "CD5", "\"M1911 Pistol Accuracy\"" },
-                    { "CN6", "\"THMP Kill\"" },
-                    { "CD6", "\"Thompson Kills\"" },
-                    { "CN7", "\"THMP Acc\"" },
-                    { "CD7", "\"Thompson Accuracy\"" },
-                    { "CN8", "\"BAR Kill\"" },
-                    { "CD8", "\"M1918 BAR Kills\"" },
-                    { "CN9", "\"BAR Acc\"" },
-                    { "CD9", "\"M1918 BAR Accuracy\"" },
-                    { "CN10", "\"GAR Kill\"" },
-                    { "CD10", "\"M1 Garand Kills\"" },
-                    { "CN11", "\"GAR Acc\"" },
-                    { "CD11", "\"M1 Garand Accuracy\"" },
-                    { "CN12", "\"SPFD Kill\"" },
-                    { "CD12", "\"Springfield Kills\"" },
-                    { "CN13", "\"SPFD Acc\"" },
-                    { "CD13", "\"Springfield Accuracy\"" },
-                    { "CN14", "\"SHOT Kill\"" },
-                    { "CD14", "\"M12 Shotgun Kills\"" },
-                    { "CN15", "\"SHOT Acc\"" },
-                    { "CD15", "\"M12 Shotgun Accuracy\"" },
-                    { "CN16", "\"BAZ Kill\"" },
-                    { "CD16", "\"M1A1 Bazooka Kills\"" },
-                    { "CN17", "\"BAZ Acc\"" },
-                    { "CD17", "\"M1A1 Bazooka Accuracy\"" },
-                    { "CN18", "\"P08 Kill\"" },
-                    { "CD18", "\"P08 Luger Kills\"" },
-                    { "CN19", "\"P08 Acc\"" },
-                    { "CD19", "\"P08 Luger Accuracy\"" },
-                    { "CN20", "\"MP40 Kill\"" },
-                    { "CD20", "\"MP40 Kills\"" },
-                    { "CN21", "\"MP40 Acc\"" },
-                    { "CD21", "\"MP40 Accuracy\"" },
-                    { "CN22", "\"StG44 Kill\"" },
-                    { "CD22", "\"StG44 AR Kills\"" },
-                    { "CN23", "\"StG44 Acc\"" },
-                    { "CD23", "\"StG44 AR Accuracy\"" },
-                    { "CN24", "\"KAR Kill\"" },
-                    { "CD24", "\"Karabiner 98K Kills\"" },
-                    { "CN25", "\"KAR Acc\"" },
-                    { "CD25", "\"Karabiner 98K Accuracy\"" },
-                    { "CN26", "\"GEWR Kill\"" },
-                    { "CD26", "\"Gewehr Kills\"" },
-                    { "CN27", "\"GEWR Acc\"" },
-                    { "CD27", "\"Gewehr Accuracy\"" },
-                    { "CN28", "\"PANZ Kill\"" },
-                    { "CD28", "\"Panzerschreck Kills\"" },
-                    { "CN29", "\"PANZ Acc\"" },
-                    { "CD29", "\"Panzerschreck Accuracy\"" },
-                    { "CN30", "\"GRND Kill\"" },
-                    { "CD30", "\"Grenade Kills\"" },
-                    { "CN31", "\"Melee Kill\"" },
-                    { "CD31", "\"Melee Kills\"" },
+            content.putAll(Stream.of(new String[][]{
+                    {"CN0", "RNK"},
+                    {"CD0", "\"Leaderboard Ranking\""},
+                    {"CN1", "Persona"},
+                    {"CD1", "Persona"},
+                    {"CN2", "Kills"},
+                    {"CD2", "\"Total Kills\""},
+                    {"CN3", "Accuracy"},
+                    {"CD3", "\"Accuracy %\""},
+                    {"CN4", "\".45 Kill\""},
+                    {"CD4", "\"M1911 Pistol Kills\""},
+                    {"CN5", "\".45 Acc\""},
+                    {"CD5", "\"M1911 Pistol Accuracy\""},
+                    {"CN6", "\"THMP Kill\""},
+                    {"CD6", "\"Thompson Kills\""},
+                    {"CN7", "\"THMP Acc\""},
+                    {"CD7", "\"Thompson Accuracy\""},
+                    {"CN8", "\"BAR Kill\""},
+                    {"CD8", "\"M1918 BAR Kills\""},
+                    {"CN9", "\"BAR Acc\""},
+                    {"CD9", "\"M1918 BAR Accuracy\""},
+                    {"CN10", "\"GAR Kill\""},
+                    {"CD10", "\"M1 Garand Kills\""},
+                    {"CN11", "\"GAR Acc\""},
+                    {"CD11", "\"M1 Garand Accuracy\""},
+                    {"CN12", "\"SPFD Kill\""},
+                    {"CD12", "\"Springfield Kills\""},
+                    {"CN13", "\"SPFD Acc\""},
+                    {"CD13", "\"Springfield Accuracy\""},
+                    {"CN14", "\"SHOT Kill\""},
+                    {"CD14", "\"M12 Shotgun Kills\""},
+                    {"CN15", "\"SHOT Acc\""},
+                    {"CD15", "\"M12 Shotgun Accuracy\""},
+                    {"CN16", "\"BAZ Kill\""},
+                    {"CD16", "\"M1A1 Bazooka Kills\""},
+                    {"CN17", "\"BAZ Acc\""},
+                    {"CD17", "\"M1A1 Bazooka Accuracy\""},
+                    {"CN18", "\"P08 Kill\""},
+                    {"CD18", "\"P08 Luger Kills\""},
+                    {"CN19", "\"P08 Acc\""},
+                    {"CD19", "\"P08 Luger Accuracy\""},
+                    {"CN20", "\"MP40 Kill\""},
+                    {"CD20", "\"MP40 Kills\""},
+                    {"CN21", "\"MP40 Acc\""},
+                    {"CD21", "\"MP40 Accuracy\""},
+                    {"CN22", "\"StG44 Kill\""},
+                    {"CD22", "\"StG44 AR Kills\""},
+                    {"CN23", "\"StG44 Acc\""},
+                    {"CD23", "\"StG44 AR Accuracy\""},
+                    {"CN24", "\"KAR Kill\""},
+                    {"CD24", "\"Karabiner 98K Kills\""},
+                    {"CN25", "\"KAR Acc\""},
+                    {"CD25", "\"Karabiner 98K Accuracy\""},
+                    {"CN26", "\"GEWR Kill\""},
+                    {"CD26", "\"Gewehr Kills\""},
+                    {"CN27", "\"GEWR Acc\""},
+                    {"CD27", "\"Gewehr Accuracy\""},
+                    {"CN28", "\"PANZ Kill\""},
+                    {"CD28", "\"Panzerschreck Kills\""},
+                    {"CN29", "\"PANZ Acc\""},
+                    {"CD29", "\"Panzerschreck Accuracy\""},
+                    {"CN30", "\"GRND Kill\""},
+                    {"CD30", "\"Grenade Kills\""},
+                    {"CN31", "\"Melee Kill\""},
+                    {"CD31", "\"Melee Kills\""},
             }).collect(Collectors.toMap(data -> data[0], data -> data[1])));
         }
 
@@ -243,7 +244,6 @@ public class StatsService {
 
     /**
      * Send ranking snapshot
-     *
      * Favorite team : 0 = Axis, 1 = Allied
      *
      * @param socket
@@ -253,7 +253,7 @@ public class StatsService {
      */
     public void snp(Socket socket, boolean isMohh, String rankingCategory, List<PersonaStatsEntity> personaStatsEntityList, long offset) {
         List<Map<String, String>> rankingList = new ArrayList<>();
-        for(PersonaStatsEntity personaStatsEntity : personaStatsEntityList) {
+        for (PersonaStatsEntity personaStatsEntity : personaStatsEntityList) {
             String name = personaStatsEntity.getPersona().getPers();
             String rank = String.valueOf(++offset);
             String points = String.valueOf(personaStatsEntity.getKill() - personaStatsEntity.getDeath());
@@ -294,20 +294,20 @@ public class StatsService {
                 } else {
                     stats += "," + (personaStatsEntity.getTdmAllies() + personaStatsEntity.getTdmAxis());
                 }
-                rankingList.add(Stream.of(new String[][] {
-                        { "N", name }, // <persona name>
-                        { "R", rank }, // <rank>
-                        { "P", points }, // <points>
-                        { "O", "0" }, // <online> ?
-                        { "S", stats }, // <stats>
+                rankingList.add(Stream.of(new String[][]{
+                        {"N", name}, // <persona name>
+                        {"R", rank}, // <rank>
+                        {"P", points}, // <points>
+                        {"O", "0"}, // <online> ?
+                        {"S", stats}, // <stats>
                 }).collect(Collectors.toMap(data -> data[0], data -> data[1])));
             } else if (WEAPON_LEADERS.mohh2Id.equals(rankingCategory)) {
-                rankingList.add(Stream.of(new String[][] {
-                        { "N", name },
-                        { "R", rank },
-                        { "P", points },
-                        { "O", "0" },
-                        { "S", String.join(",",
+                rankingList.add(Stream.of(new String[][]{
+                        {"N", name},
+                        {"R", rank},
+                        {"P", points},
+                        {"O", "0"},
+                        {"S", String.join(",",
                                 String.valueOf(offset),
                                 personaStatsEntity.getPersona().getPers(),
                                 String.valueOf(personaStatsEntity.getKill()),
@@ -340,7 +340,7 @@ public class StatsService {
                                 getPrecision(personaStatsEntity.getPanzHit(), personaStatsEntity.getPanzShot()),
                                 String.valueOf(personaStatsEntity.getGrenKill()),
                                 String.valueOf(personaStatsEntity.getMeleeKill())
-                              )
+                        )
                         },
                 }).collect(Collectors.toMap(data -> data[0], data -> data[1])));
             }
@@ -354,6 +354,7 @@ public class StatsService {
 
     /**
      * Send ranking results.
+     *
      * @param socket
      * @param socketData
      */
@@ -364,16 +365,16 @@ public class StatsService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATETIME_FORMAT);
         LocalDateTime parsedStartTime = LocalDateTime.parse(startTime, formatter);
         List<GameReportEntity> gameReportEntities = gameReportRepository.findMatchingGameReports(playerName, parsedStartTime);
-        if(!gameReportEntities.isEmpty()) {
+        if (!gameReportEntities.isEmpty()) {
             GameReportEntity gameReportEntity = gameReportEntities.get(0);
             socketMapper.toGameReportEntity(gameReportEntity, socketData.getInputMessage());
             gameReportRepository.save(gameReportEntity);
 
             // Update PersonaStats with the new game report (ranked only)
-            if(gameReportEntity.getRnk() == 1) {
+            if (gameReportEntity.getRnk() == 1) {
                 PersonaStatsEntity personaStatsEntity = personaStatsRepository.findByPersonaIdAndVersIn(
                         gameReportEntity.getPersonaConnection().getPersona().getId(), GameVersUtils.getRelatedVers(gameReportEntity.getGame().getVers()));
-                if(personaStatsEntity != null) {
+                if (personaStatsEntity != null) {
                     updatePersonaStats(personaStatsEntity, gameReportEntity);
                     personaStatsRepository.save(personaStatsEntity);
                 }
@@ -399,8 +400,8 @@ public class StatsService {
     private void updatePersonaStats(PersonaStatsEntity personaStatsEntity, GameReportEntity gameReportEntity) {
         Field[] personaFields = PersonaStatsEntity.class.getDeclaredFields();
         Set<String> gameReportFieldNames = Arrays.stream(GameReportEntity.class.getDeclaredFields())
-                                                 .map(Field::getName)
-                                                 .collect(Collectors.toSet());
+                .map(Field::getName)
+                .collect(Collectors.toSet());
 
         for (Field field : personaFields) {
             if (gameReportFieldNames.contains(field.getName()) && !"id".equalsIgnoreCase(field.getName())) {
@@ -413,7 +414,7 @@ public class StatsService {
                     } else if (field.getType().equals(long.class) || field.getType().equals(Long.class)) {
                         field.set(personaStatsEntity, (long) field.get(personaStatsEntity) + (long) gameReportField.get(gameReportEntity));
                     }
-                    } catch (IllegalAccessException | NoSuchFieldException e) {
+                } catch (IllegalAccessException | NoSuchFieldException e) {
                     log.error("Error updating field: " + field.getName(), e);
                 }
             }
@@ -422,6 +423,7 @@ public class StatsService {
 
     /**
      * Get precision
+     *
      * @param hit
      * @param shot
      * @return precision in percentage
@@ -429,7 +431,7 @@ public class StatsService {
     private String getPrecision(long hit, long shot) {
         long miss = shot - hit;
         String precision = "100";
-        if(0 != hit + miss) {
+        if (0 != hit + miss) {
             precision = String.valueOf(new Formatter(Locale.US).format("%.2f", hit / ((float) hit + miss) * 100));
         }
         return precision;
@@ -450,7 +452,7 @@ public class StatsService {
 
                 // Find the corresponding enum by matching the id attribute
                 String mapKey;
-                if(isMohh) {
+                if (isMohh) {
                     mapKey = "181";
                     for (MapMoHH map : MapMoHH.values()) {
                         if (map.code.equals("MAP" + i)) {
@@ -488,7 +490,6 @@ public class StatsService {
 
     /**
      * Get most played mode
-     *
      * Values : 0 = DM, 1 = TDM, 2 = INF, 3 = DEM, 4 = DOM, 5 = HTL, 6 = BL
      * Note that on MoHH value 1 = "FS_M_TDM", surely TDM was planned but cut off
      *

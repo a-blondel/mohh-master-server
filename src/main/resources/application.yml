@@ -18,7 +18,7 @@ tcp:
   buddy-port: ${TCP_BUDDY_PORT:5000}
   debug:
     enabled: ${TCP_DEBUG_ENABLED:false}
-    exclusions: ${TCP_DEBUG_EXCLUSIONS:~png,+snp,AUTH,EPGT,RGET,PSET,USCH,DISC}
+    exclusions: ${TCP_DEBUG_EXCLUSIONS:~png,+snp}
 ssc2:
   key: 51ba8aee64ddfacae5baefa6bf61e009
 

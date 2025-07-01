@@ -1,5 +1,6 @@
 package com.ea.steps;
 
+import com.ea.dto.BuddySocketWrapper;
 import com.ea.dto.SocketData;
 import com.ea.dto.SocketWrapper;
 import com.ea.services.*;
@@ -20,22 +21,67 @@ public class SocketProcessor {
     private final GameService gameService;
     private final SocketWriter socketWriter;
     private final SocketManager socketManager;
+    private final BuddyService buddyService;
 
     /**
      * Dispatch to appropriate service based on request type
-     * @param socket the socket to handle
+     *
+     * @param socket     the socket to handle
      * @param socketData the object to process
      */
     public void process(Socket socket, SocketData socketData) {
         SocketWrapper socketWrapper = socketManager.getSocketWrapper(socket);
+        BuddySocketWrapper buddySocketWrapper = socketManager.getBuddySocketWrapper(socket);
         switch (socketData.getIdMessage()) {
             case ("~png"):
                 break;
-            case ("@tic"), ("AUTH"), ("EPGT"), ("RGET"), ("PSET"), ("USCH"), ("DISC"):
+            case ("@tic"):
                 socketWriter.write(socket, socketData);
                 break;
             case ("@dir"):
                 authService.dir(socket, socketData);
+                break;
+            case ("AUTH"):
+                buddyService.auth(socket, socketData, buddySocketWrapper);
+                break;
+            case ("EPGT"):
+                buddyService.epgt(socket, socketData);
+                break;
+            case ("RGET"):
+                buddyService.rget(socket, socketData, buddySocketWrapper);
+                break;
+            case ("RADM"):
+                buddyService.radm(socket, socketData, buddySocketWrapper);
+                break;
+            case ("RDEM"):
+                buddyService.rdem(socket, socketData, buddySocketWrapper);
+                break;
+            case ("USCH"):
+                buddyService.usch(socket, socketData);
+                break;
+            case ("RADD"):
+                buddyService.radd(socket, socketData, buddySocketWrapper);
+                break;
+            case ("RDEL"):
+                buddyService.rdel(socket, socketData, buddySocketWrapper);
+                break;
+            case ("RRSP"):
+                buddyService.rrsp(socket, socketData, buddySocketWrapper);
+                break;
+            case ("PSET"):
+                buddyService.pset(socket, socketData, buddySocketWrapper);
+                break;
+            case ("PADD"):
+                buddyService.padd(socket, socketData, buddySocketWrapper);
+                break;
+            case ("PDEL"):
+                buddyService.pdel(socket, socketData, buddySocketWrapper);
+                break;
+            case ("SEND"):
+                buddyService.send(socket, socketData, buddySocketWrapper);
+                break;
+            case ("DISC"):
+                buddyService.disc(buddySocketWrapper);
                 break;
             case ("addr"):
                 authService.addr(socket, socketData);
@@ -72,6 +118,9 @@ public class SocketProcessor {
                 break;
             case ("llvl"):
                 personaService.llvl(socket, socketData, socketWrapper);
+                break;
+            case ("rept"):
+                personaService.rept(socket, socketData, socketWrapper);
                 break;
             case ("cate"):
                 statsService.cate(socket, socketData);

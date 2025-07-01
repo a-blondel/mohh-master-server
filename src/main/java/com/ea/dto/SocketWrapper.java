@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class SocketWrapper {
     private Socket socket;
     private String identifier;
+    private volatile String lkey;
     private final AtomicBoolean isHost = new AtomicBoolean(false);
     private final AtomicBoolean isGps = new AtomicBoolean(false);
     private final AtomicBoolean isHosting = new AtomicBoolean(false);

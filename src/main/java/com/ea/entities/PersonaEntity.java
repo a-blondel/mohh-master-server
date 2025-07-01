@@ -1,5 +1,8 @@
 package com.ea.entities;
 
+import com.ea.entities.social.BuddyEntity;
+import com.ea.entities.social.FeedbackEntity;
+import com.ea.entities.social.MessageEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,11 +19,11 @@ import java.util.Set;
 public class PersonaEntity {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name="ACCOUNT_ID", nullable=false)
+    @JoinColumn(name = "ACCOUNT_ID", nullable = false)
     private AccountEntity account;
 
     private String pers;
@@ -34,7 +37,25 @@ public class PersonaEntity {
     @OneToMany(mappedBy = "persona", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<PersonaStatsEntity> personaStats;
 
-    @OneToMany(mappedBy="persona", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "persona", fetch = FetchType.EAGER)
     private Set<PersonaConnectionEntity> personaConnections;
+
+    @OneToMany(mappedBy = "fromPersona", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<BuddyEntity> buddiesFrom;
+
+    @OneToMany(mappedBy = "toPersona", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<BuddyEntity> buddiesTo;
+
+    @OneToMany(mappedBy = "fromPersona", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<MessageEntity> messagesSent;
+
+    @OneToMany(mappedBy = "toPersona", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<MessageEntity> messagesReceived;
+
+    @OneToMany(mappedBy = "fromPersona", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<FeedbackEntity> feedbackGiven;
+
+    @OneToMany(mappedBy = "toPersona", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<FeedbackEntity> feedbackReceived;
 
 }
