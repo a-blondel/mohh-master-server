@@ -2,7 +2,7 @@ package com.ea.steps;
 
 import com.ea.dto.SocketData;
 import com.ea.dto.SocketWrapper;
-import com.ea.services.SocketManager;
+import com.ea.services.server.SocketManager;
 import com.ea.utils.HexUtils;
 import com.ea.utils.Props;
 import com.ea.utils.SocketUtils;
@@ -26,8 +26,9 @@ public class SocketParser {
      * Parses input messages based on current content of the stream
      * Loops until all complete messages are parsed
      * Sends complete messages to the processor
-     * @param socket the socket to exchange with
-     * @param buffer the buffer to read from
+     *
+     * @param socket     the socket to exchange with
+     * @param buffer     the buffer to read from
      * @param readLength the size of written content in buffer
      */
     public void parse(Socket socket, byte[] buffer, int readLength) {

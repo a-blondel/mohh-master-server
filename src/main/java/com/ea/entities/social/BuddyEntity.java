@@ -1,6 +1,6 @@
 package com.ea.entities.social;
 
-import com.ea.entities.PersonaEntity;
+import com.ea.entities.core.PersonaEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

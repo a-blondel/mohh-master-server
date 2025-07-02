@@ -1,13 +1,10 @@
 package com.ea;
 
-import com.ea.config.ServerConfig;
-import com.ea.config.SslSocketThread;
-import com.ea.config.TcpSocketThread;
-import com.ea.config.TunnelHandler;
-import com.ea.enums.Certificates;
-import com.ea.services.GameService;
-import com.ea.services.PersonaService;
-import com.ea.services.SocketManager;
+import com.ea.config.*;
+import com.ea.services.core.GameService;
+import com.ea.services.core.PersonaService;
+import com.ea.services.server.GameServerService;
+import com.ea.services.server.SocketManager;
 import com.ea.steps.SocketReader;
 import com.ea.steps.SocketWriter;
 import com.ea.utils.Props;
@@ -42,6 +39,7 @@ public class ServerApp implements CommandLineRunner {
 
     private final Props props;
     private final ServerConfig serverConfig;
+    private final GameServerService gameServerService;
     private final SocketManager socketManager;
     private final SocketReader socketReader;
     private final SocketWriter socketWriter;
@@ -70,58 +68,37 @@ public class ServerApp implements CommandLineRunner {
         startDataCleanupThread();
 
         try {
-            ServerSocket buddyTcpServerSocket = serverConfig.createTcpServerSocket(props.getTcpBuddyPort());
-            startServerThread(buddyTcpServerSocket, this::createTcpSocketThread, false);
-
-            if (props.getHostedGames().contains("mohh_psp_pal")) {
-                ServerSocket mohhPspPalTcpServerSocket = serverConfig.createTcpServerSocket(11180);
-                startServerThread(mohhPspPalTcpServerSocket, this::createTcpSocketThread);
-                SSLServerSocket mohhPspPalSslServerSocket = serverConfig.createSslServerSocket(11181, Certificates.MOHH_PSP);
-                startServerThread(mohhPspPalSslServerSocket, this::createSslSocketThread);
-            }
-            if (props.getHostedGames().contains("mohh_psp_ntsc")) {
-                ServerSocket mohhPspNtscTcpServerSocket = serverConfig.createTcpServerSocket(11190);
-                startServerThread(mohhPspNtscTcpServerSocket, this::createTcpSocketThread);
-                SSLServerSocket mohhPspNtscSslServerSocket = serverConfig.createSslServerSocket(11191, Certificates.MOHH_PSP);
-                startServerThread(mohhPspNtscSslServerSocket, this::createSslSocketThread);
-            }
-            if (props.getHostedGames().contains("mohh2_psp_pal")) {
-                ServerSocket mohh2PspPalTcpServerSocket = serverConfig.createTcpServerSocket(21180);
-                startServerThread(mohh2PspPalTcpServerSocket, this::createTcpSocketThread);
-                SSLServerSocket mohh2PspPalSslServerSocket = serverConfig.createSslServerSocket(21181, Certificates.MOHH2_PSP);
-                startServerThread(mohh2PspPalSslServerSocket, this::createSslSocketThread);
-            }
-            if (props.getHostedGames().contains("mohh2_psp_ntsc")) {
-                ServerSocket mohh2PspNtscTcpServerSocket = serverConfig.createTcpServerSocket(21190);
-                startServerThread(mohh2PspNtscTcpServerSocket, this::createTcpSocketThread);
-                SSLServerSocket mohh2PspNtscSslServerSocket = serverConfig.createSslServerSocket(21191, Certificates.MOHH2_PSP);
-                startServerThread(mohh2PspNtscSslServerSocket, this::createSslSocketThread);
-            }
-            if (props.getHostedGames().contains("mohh2_wii_pal")) {
-                ServerSocket mohh2WiiPalTcpServerSocket = serverConfig.createTcpServerSocket(21170);
-                startServerThread(mohh2WiiPalTcpServerSocket, this::createTcpSocketThread);
-                SSLServerSocket mohh2WiiPalSslServerSocket = serverConfig.createSslServerSocket(21171, Certificates.MOHH2_WII);
-                startServerThread(mohh2WiiPalSslServerSocket, this::createSslSocketThread);
-            }
-            if (props.getHostedGames().contains("mohh2_wii_ntsc")) {
-                ServerSocket mohh2WiiNtscTcpServerSocket = serverConfig.createTcpServerSocket(21120);
-                startServerThread(mohh2WiiNtscTcpServerSocket, this::createTcpSocketThread);
-                SSLServerSocket mohh2WiiNtscSslServerSocket = serverConfig.createSslServerSocket(21121, Certificates.MOHH2_WII);
-                startServerThread(mohh2WiiNtscSslServerSocket, this::createSslSocketThread);
+            for (GameServerConfig.GameServer gameServer : gameServerService.getEnabledServers()) {
+                startGameServer(gameServer);
             }
         } catch (Exception e) {
             log.error("Error starting servers", e);
         }
     }
 
-    private void startServerThread(ServerSocket serverSocket, Function<Socket, Runnable> runnableFactory) {
-        startServerThread(serverSocket, runnableFactory, true);
+    private void startGameServer(GameServerConfig.GameServer gameServer) throws Exception {
+        for (GameServerConfig.RegionConfig region : gameServer.getRegions()) {
+            // TCP server
+            ServerSocket tcpServerSocket = serverConfig.createTcpServerSocket(region.getPort());
+            startServerThread(tcpServerSocket, this::createTcpSocketThread, gameServer.isAries());
+            log.info("Started TCP server for {} {} on port {}", gameServer.getVers(), region.getName(), region.getPort());
+
+            // SSL server
+            if (gameServer.getSsl() != null && gameServer.getSsl().isEnabled() && gameServer.getSsl().getDomain() != null) {
+                int sslPort = region.getPort() + 1;
+                String subject = gameServerService.generateSslSubject(gameServer.getSsl().getDomain());
+                String issuer = gameServerService.getSslIssuer();
+
+                SSLServerSocket sslServerSocket = serverConfig.createSslServerSocket(sslPort, subject, issuer, gameServer.getVers());
+                startServerThread(sslServerSocket, this::createSslSocketThread, true);
+                log.info("Started SSL server for {} {} on port {}", gameServer.getVers(), region.getName(), sslPort);
+            }
+        }
     }
 
     private void startServerThread(ServerSocket serverSocket, Function<Socket, Runnable> runnableFactory, boolean isAries) {
         new Thread(() -> {
             try {
-                log.info("Starting server thread on port {}", serverSocket.getLocalPort());
                 while (true) {
                     Socket socket = serverSocket.accept();
                     if (!(socket instanceof SSLSocket)) {

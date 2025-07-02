@@ -1,7 +1,7 @@
 package com.ea.frontend;
 
-import com.ea.enums.MapMoHH;
-import com.ea.repositories.GameReportRepository;
+import com.ea.enums.MohhMap;
+import com.ea.repositories.core.GameConnectionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,17 +13,16 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-public class ServerStatusAPI
-{
+public class ServerStatusAPI {
     @Autowired
     private final API api;
 
     @Autowired
-    private final GameReportRepository gameReportRepository;
+    private final GameConnectionRepository gameConnectionRepository;
 
     @GetMapping("/api/games")
     public ResponseEntity<DTO.MonitorResponse> getGameMonitorJson() {
-        List<DTO.GameStatusDTO> gameStats = gameReportRepository.findAllActiveGamesWithStats();
+        List<DTO.GameStatusDTO> gameStats = gameConnectionRepository.findAllActiveGamesWithStats();
 
         int playersInGame = api.getPlayersInGame();
         int playersInLobby = api.getPlayersInLobby();
@@ -49,7 +48,7 @@ public class ServerStatusAPI
                 game.id(),
                 game.name().replaceAll("\"", ""),
                 game.version(),
-                MapMoHH.getMapNameByHexId(game.params().split(",")[1]),
+                MohhMap.getMapNameByHexId(game.params().split(",")[1]),
                 game.params(),
                 game.pass() != null,
                 api.toUTCInstant(game.startTime()),
@@ -64,7 +63,7 @@ public class ServerStatusAPI
     }
 
     private List<DTO.PlayerInfo> getActivePlayers(Long gameId) {
-        return gameReportRepository.findActivePlayersByGameId(gameId)
+        return gameConnectionRepository.findActivePlayersByGameId(gameId)
                 .stream()
                 .map(player -> new DTO.PlayerInfo(
                         player.playerName().replaceAll("\"", ""),
