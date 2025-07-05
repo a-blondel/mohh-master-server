@@ -3,7 +3,6 @@ package com.ea.utils;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
 
 public class AccountUtils {
 
@@ -15,21 +14,32 @@ public class AccountUtils {
      */
     public static String suggestNames(int alts, String name) {
         Set<String> opts = new LinkedHashSet<>();
+        name = name.replaceAll("\"", "");
 
         if(name.length() > 8) {
             name = name.substring(0, 7);
         }
 
         for(int i = 1; i <= alts; i++) {
+            String suggestion;
             if(i == 1) {
-                opts.add(name + "Kid");
+                suggestion = name + "Kid";
             } else if(i == 2) {
-                opts.add(name + "Rule");
+                suggestion = name + "Rule";
             } else {
-                opts.add(name + ThreadLocalRandom.current().nextInt(1000, 10000));
+                suggestion = name + ThreadLocalRandom.current().nextInt(1000, 10000);
             }
+            if(suggestion.length() > 12) {
+                suggestion = suggestion.substring(0, 11); // Limit to 12 characters
+            }
+            if(suggestion.contains(" ")) {
+                suggestion = "\"" + suggestion + "\""; // Add quotes if the name contains spaces
+            }
+            // Optionally verify in DB if the generated names are already taken, it will be verified again in cper anyway
+            opts.add(suggestion);
         }
-        return opts.stream().map(s -> s.substring(0, s.length() > 12 ? 11 : s.length())).collect(Collectors.joining(","));
+
+        return String.join(",", opts);
     }
 
 }

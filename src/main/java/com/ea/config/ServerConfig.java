@@ -1,7 +1,6 @@
 package com.ea.config;
 
 import com.ea.dirtysdk.ProtoSSL;
-import com.ea.enums.Certificates;
 import com.ea.utils.Props;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,18 +36,21 @@ public class ServerConfig {
         return new BCryptPasswordEncoder();
     }
 
-
     /**
-     * Initiate the SSL server socket
+     * Initiate the SSL server socket with dynamic subject and issuer
+     *
+     * @param port     The port number
+     * @param subject  The SSL certificate subject
+     * @param issuer   The SSL certificate issuer
+     * @param certName Unique name for this certificate (typically the server vers)
      * @return SSLServerSocket
-     * @throws IOException
      */
-    public SSLServerSocket createSslServerSocket(int port, Certificates certificates) throws Exception {
-        Pair<KeyPair, Certificate> eaCert = protoSSL.getEaCert(certificates);
+    public SSLServerSocket createSslServerSocket(int port, String subject, String issuer, String certName) throws Exception {
+        Pair<KeyPair, Certificate> eaCert = protoSSL.getEaCert(subject, issuer);
 
         KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
         keyStore.load(null, null);
-        keyStore.setKeyEntry(certificates.getName(), eaCert.getLeft().getPrivate(), "password".toCharArray(), new Certificate[]{eaCert.getRight()});
+        keyStore.setKeyEntry(certName, eaCert.getLeft().getPrivate(), "password".toCharArray(), new Certificate[]{eaCert.getRight()});
 
         KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         keyManagerFactory.init(keyStore, "password".toCharArray());
@@ -67,8 +69,8 @@ public class ServerConfig {
 
     /**
      * Initiate the TCP server socket
+     *
      * @return ServerSocket
-     * @throws IOException
      */
     public ServerSocket createTcpServerSocket(int port) throws IOException {
         return ServerSocketFactory.getDefault().createServerSocket(port);

@@ -1,10 +1,11 @@
 package com.ea.config;
 
+import com.ea.dto.BuddySocketWrapper;
 import com.ea.dto.SocketData;
 import com.ea.dto.SocketWrapper;
-import com.ea.services.GameService;
-import com.ea.services.PersonaService;
-import com.ea.services.SocketManager;
+import com.ea.services.core.GameService;
+import com.ea.services.core.PersonaService;
+import com.ea.services.server.SocketManager;
 import com.ea.steps.SocketReader;
 import com.ea.steps.SocketWriter;
 import com.ea.utils.SocketUtils;
@@ -23,14 +24,13 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class TcpSocketThread implements Runnable {
 
-    private ScheduledExecutorService pingExecutor;
-
     private final Socket clientSocket;
     private final SocketManager socketManager;
     private final SocketReader socketReader;
     private final SocketWriter socketWriter;
     private final PersonaService personaService;
     private final GameService gameService;
+    private ScheduledExecutorService pingExecutor;
 
     @Override
     public void run() {
@@ -48,9 +48,14 @@ public class TcpSocketThread implements Runnable {
             SocketWrapper socketWrapper = socketManager.getSocketWrapper(clientSocket);
             String playerInfo = SocketUtils.getPlayerInfo(socketWrapper);
             if (socketWrapper != null && socketWrapper.getPersonaEntity() != null) {
-                gameService.endGameReport(socketWrapper);
+                gameService.endGameConnection(socketWrapper);
                 personaService.endPersonaConnection(socketWrapper);
                 socketManager.removeSocket(socketWrapper.getIdentifier());
+            }
+
+            BuddySocketWrapper buddySocketWrapper = socketManager.getBuddySocketWrapper(clientSocket);
+            if (buddySocketWrapper != null) {
+                socketManager.removeBuddySocket(buddySocketWrapper.getIdentifier());
             }
             log.info("TCP client session ended: {} {}", clientSocket.getRemoteSocketAddress(), playerInfo);
         }

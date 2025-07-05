@@ -1,7 +1,11 @@
 ﻿ %{START CMD=news TITLE="Welcome" BTN1="OK" BTN1-GOTO="$quit" TELE=TOSVVIEWen %}
-Official servers were shut down on August 11, 2011.
+The official server was shut down on August 11, 2011.
 
-This is a community run server, please be respectful and have fun !
+This server is a fan-made preservation project that is not affiliated nor endorsed by EA.
 
-- l ch ti, SolidSnakeRu, and everyone making it possible <3
+Join our Discord server to stay updated on the latest news and events: https://discord.gg/fwrQHHxrQQ
+
+Please be respectful and have fun !
+
+- Medal Of Honor Heroes Revival Team
 %{%}
