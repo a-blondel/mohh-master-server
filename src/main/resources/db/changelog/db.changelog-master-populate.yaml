@@ -1,16 +1,6 @@
 databaseChangeLog:
-  - changeSet:
-      id: 001-schema
-      author: ablondel
-      changes:
-        - sqlFile:
-            path: db/changelog/changes/001-schema.sql
-        - sqlFile:
-            path: db/changelog/changes/002-fix-grenade-typo.sql
-        - sqlFile:
-            path: db/changelog/changes/003-add-blacklist.sql
-        - sqlFile:
-            path: db/changelog/changes/004-social-schema.sql
+  - includeAll:
+      path: db/changelog/changes/
   - changeSet:
       id: 002-data
       author: ablondel

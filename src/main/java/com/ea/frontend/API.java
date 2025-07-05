@@ -1,7 +1,7 @@
 package com.ea.frontend;
 
-import com.ea.repositories.GameReportRepository;
-import com.ea.repositories.PersonaConnectionRepository;
+import com.ea.repositories.core.GameConnectionRepository;
+import com.ea.repositories.core.PersonaConnectionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -10,16 +10,16 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 
-import static com.ea.utils.GameVersUtils.VERS_MOHH_PSP;
+import static com.ea.services.server.GameServerService.VERS_MOHH_PSP;
 
 @Service
 @RequiredArgsConstructor
 public class API {
-    private final GameReportRepository gameReportRepository;
+    private final GameConnectionRepository gameConnectionRepository;
     private final PersonaConnectionRepository personaConnectionRepository;
 
     public int getPlayersInGame() {
-        return gameReportRepository.countPlayersInGame(VERS_MOHH_PSP);
+        return gameConnectionRepository.countPlayersInGame(VERS_MOHH_PSP);
     }
 
     public int getPlayersInLobby() {

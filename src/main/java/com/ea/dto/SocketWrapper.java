@@ -1,8 +1,8 @@
 package com.ea.dto;
 
-import com.ea.entities.AccountEntity;
-import com.ea.entities.PersonaConnectionEntity;
-import com.ea.entities.PersonaEntity;
+import com.ea.entities.core.AccountEntity;
+import com.ea.entities.core.PersonaConnectionEntity;
+import com.ea.entities.core.PersonaEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,7 +1,7 @@
 package com.ea.ws;
 
 import com.ea.dto.SocketData;
-import com.ea.services.SocketManager;
+import com.ea.services.server.SocketManager;
 import com.ea.steps.SocketWriter;
 import com.ea.ws.dto.PacketDTO;
 import lombok.RequiredArgsConstructor;

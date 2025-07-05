@@ -1,6 +1,6 @@
 package com.ea.repositories.buddy;
 
-import com.ea.entities.PersonaEntity;
+import com.ea.entities.core.PersonaEntity;
 import com.ea.entities.social.BuddyEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

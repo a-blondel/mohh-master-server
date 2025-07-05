@@ -49,7 +49,4 @@ public class Props {
     @Value("${ssc2.key}")
     private String ssc2Key;
 
-    @Value("#{'${hosted-games}'.split(',')}")
-    private List<String> hostedGames;
-
 }

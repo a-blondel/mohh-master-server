@@ -2,7 +2,7 @@ package com.ea.steps;
 
 import com.ea.dto.SocketData;
 import com.ea.dto.SocketWrapper;
-import com.ea.services.SocketManager;
+import com.ea.services.server.SocketManager;
 import com.ea.utils.HexUtils;
 import com.ea.utils.Props;
 import com.ea.utils.SocketUtils;
@@ -34,9 +34,9 @@ public class SocketWriter {
     /**
      * Builds the full output message based on the data id and content
      * Then sends it through the socket
-     * @param socket the socket to write into
+     *
+     * @param socket     the socket to write into
      * @param socketData the object to use to write the message
-     * @throws IOException
      */
     public void write(Socket socket, SocketData socketData, String joiner) {
 

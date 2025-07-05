@@ -25,13 +25,13 @@
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <apache-commons-lang3.version>3.17.0</apache-commons-lang3.version>
-        <boucy-castle.version>1.78.1</boucy-castle.version>
-        <liquibase.version>4.29.2</liquibase.version>
+        <boucy-castle.version>1.81</boucy-castle.version>
+        <liquibase.version>4.29.2</liquibase.version> <!-- Beware 4.32.0 breaks SSL -->
         <postgresql.version>42.7.7</postgresql.version>
         <com.h2database.version>2.3.232</com.h2database.version>
-        <snakeyaml.version>2.3</snakeyaml.version>
-        <logback.version>1.5.15</logback.version>
-        <netty.version>4.1.118.Final</netty.version>
+        <snakeyaml.version>2.4</snakeyaml.version>
+        <logback.version>1.5.18</logback.version>
+        <netty.version>4.2.2.Final</netty.version>
     </properties>
 
     <dependencies>

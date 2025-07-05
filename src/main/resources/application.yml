@@ -49,8 +49,72 @@ spring:
 #      hibernate:
 #        format_sql: true
 
-# List of games that are hosted by the server, remove unneeded games
-hosted-games: mohh_psp_pal,mohh_psp_ntsc,mohh2_psp_pal,mohh2_psp_ntsc,mohh2_wii_pal,mohh2_wii_ntsc
+game:
+  servers:
+    - vers: 'BUDDY'
+      aries: false
+      ssl:
+        enabled: false
+      regions:
+        - name: 'GLOBAL'
+          port: 5000 # Arbitrary buddy port, set anything you want
+
+    - vers: 'PSP/MOH07'
+      sdk: '4.7.0'
+      p2p: false
+      dedicated:
+        vers: 'PSP/MOHGPS071'
+        slus: 'MOHA10000'
+        port: 11190
+      ssl:
+        domain: 'pspmoh07.ea.com'
+      regions:
+        - name: "EU"
+          port: 11180
+          slus:
+            - 'ULES00557'
+            - 'ULES00558'
+            - 'ULES00559'
+            - 'ULES00560'
+            - 'ULES00561'
+            - 'ULES00562'
+        - name: "US"
+          port: 11190
+          slus:
+            - 'ULUS10141'
+
+    - vers: 'PSP/MOH08'
+      sdk: '5.6.2'
+      p2p: false
+      ssl:
+        domain: 'pspmoh08.ea.com'
+      regions:
+        - name: 'EU'
+          port: 21180
+          slus:
+            - 'ULES00955'
+            - 'ULES00956'
+            - 'ULES00988'
+        - name: 'US'
+          port: 21190
+          slus:
+            - 'ULUS10310'
+
+    - vers: 'WII/MOH08'
+      sdk: '5.6.2'
+      p2p: false
+      ssl:
+        domain: 'wiimoh08.ea.com'
+      regions:
+        - name: 'EU'
+          port: 21170
+          slus:
+            - 'RM2X'
+            - 'RM2P'
+        - name: 'US'
+          port: 21120
+          slus:
+            - 'RM2E'
 
 ---
 

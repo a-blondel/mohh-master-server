@@ -1,6 +1,6 @@
 package com.ea.dto;
 
-import com.ea.entities.PersonaEntity;
+import com.ea.entities.core.PersonaEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
