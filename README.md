@@ -1,5 +1,9 @@
 # Master Server for Medal Of Honor Heroes 1 & 2
 
+Important note : as the scope of the project has been extended to support more games, this project has been discontinued in the 
+favor of [EA Nation Server](https://github.com/a-blondel/ea-nation-server) 
+
+
 This project aims to provide a master server for Medal of Honor Heroes 1 (PSP) and 2 (PSP/Wii).  
 It uses the `User Hosted Server` formerly distributed by EA to host games for MoHH1.  
 For MoHH2, a serverless patch has been made to allow playing alone on multiplayer maps. Playing with others isn't
