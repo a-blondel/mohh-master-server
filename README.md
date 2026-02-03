@@ -1,7 +1,7 @@
 # Master Server for Medal Of Honor Heroes 1 & 2
 
-Important note : as the scope of the project has been extended to support more games, this project has been discontinued in the 
-favor of [EA Nation Server](https://github.com/a-blondel/ea-nation-server) 
+⚠️ **Important note : as the scope of the project has been extended to support more games, this project has been discontinued in the 
+favor of [EA Nation Server](https://github.com/a-blondel/ea-nation-server)** 
 
 
 This project aims to provide a master server for Medal of Honor Heroes 1 (PSP) and 2 (PSP/Wii).  
@@ -106,7 +106,7 @@ Nintendo Wi-Fi Connection (NWC) servers have been shut down, and the Wii version
 To make the game to use this server you need to enable a `Private Server` Riivolution patch when booting the game.  
 You can use either `NoSSL` or `Wiimmfi` options. This server contains a built-in NWC server to be used with `NoSSL`
 option if you redirect `naswii.nintendowifi.net` traffic (next chapter).  
-Riivolution patches can be found here : https://github.com/a-blondel/mohh2-wii-patch
+Riivolution patches can be found here : [EA Nation patches](https://github.com/a-blondel/ea-nation-patches)
 
 ### 2/ Hosts file or DNS
 
